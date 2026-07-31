@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+*.log
+.DS_Store
+
+# Arbeitsmaterial, gehoert nicht ins oeffentliche Repo:
+# blog-drafts/ enthaelt die Themenliste mit Kundenkontext und noch nicht
+# veroeffentlichte Social-Texte, blog-inbox/ die Rohbilder. Die Bild-Prompts
+# bleiben drin, weil sie zur Reproduzierbarkeit eines Beitrags gehoeren.
+blog-drafts/
+blog-inbox/*
+!blog-inbox/*/
+blog-inbox/*/*
+!blog-inbox/*/prompts.md

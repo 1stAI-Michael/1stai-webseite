@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 80" role="img" aria-label="1stAI">
+  <circle cx="70" cy="14" r="5" fill="#F97316"/>
+  <circle cx="55" cy="40" r="5" fill="#F97316"/>
+  <circle cx="85" cy="40" r="5" fill="#F97316"/>
+  <circle cx="42" cy="66" r="5" fill="#F97316"/>
+  <circle cx="70" cy="66" r="5" fill="#F97316"/>
+  <circle cx="98" cy="66" r="5" fill="#F97316"/>
+  <line x1="70" y1="14" x2="55" y2="40" stroke="#F97316" stroke-width="1.2" opacity="0.6"/>
+  <line x1="70" y1="14" x2="85" y2="40" stroke="#F97316" stroke-width="1.2" opacity="0.6"/>
+  <line x1="55" y1="40" x2="42" y2="66" stroke="#F97316" stroke-width="1.2" opacity="0.6"/>
+  <line x1="55" y1="40" x2="70" y2="66" stroke="#F97316" stroke-width="1.2" opacity="0.6"/>
+  <line x1="85" y1="40" x2="70" y2="66" stroke="#F97316" stroke-width="1.2" opacity="0.6"/>
+  <line x1="85" y1="40" x2="98" y2="66" stroke="#F97316" stroke-width="1.2" opacity="0.6"/>
+</svg>

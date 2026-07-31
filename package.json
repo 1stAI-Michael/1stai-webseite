@@ -1,0 +1,33 @@
+{
+  "name": "1stai-webseite",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "prebuild": "node scripts/generate-llms-txt.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "blog:assets": "node scripts/blog-assets.mjs",
+    "blog:check": "node scripts/blog-check.mjs",
+    "blog:preview": "node scripts/blog-social-preview.mjs",
+    "blog:verify": "npm run build && node scripts/blog-check.mjs --built"
+  },
+  "dependencies": {
+    "idb": "^8.0.3",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^16.5.0",
+    "postcss": "^8.5.6",
+    "puppeteer-core": "^24.43.1",
+    "tailwindcss": "^3.4.13"
+  }
+}

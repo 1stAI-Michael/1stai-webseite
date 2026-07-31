@@ -1,0 +1,39 @@
+# Michael Schiffer 1stAI (1stAI)
+
+> AI consulting for teams that ship. Independent AI consultancy of Michael Schiffer, based in Lower Silesia, Poland, working across the EU. Focus: local and on-premise large language models, legacy code documentation, document automation and voice agents for mid-sized companies.
+
+Site: https://1stai.eu · Contact: schiffer@1stai.eu · Languages: German, English
+
+## About
+
+Michael Schiffer has twenty years of industrial IT experience, now applied to LLMs, agents and the systems around them. Articles report measured results from real rollouts, including the runs that failed, with the numbers and the limitations stated.
+
+## Articles (English)
+
+Long-form, measurement-based write-ups:
+
+- [Detecting Ollama hangs: GPU idle, CPU maxed out](https://1stai.eu/en/blog/ollama-stallwatch-gpu-hang-erkennung/): Ollama stalls, the model stays in VRAM, the GPU sits at 0 % — and the log says nothing. How a monitoring stack cuts detection from 300 seconds to 30. Keywords: Ollama, local LLM inference, GPU monitoring, hang detection, watchdog, OCR pipeline, on-premise LLM, systemd, SQLite, observability, deepseek-ocr. Published 2026-07-31.
+- [Local LLMs for COBOL documentation: a benchmark](https://1stai.eu/en/blog/local-llm-cobol-documentation-moe-benchmark/): Four open MoE models on an NVIDIA DGX Spark against eleven production COBOL programs. None beats the baseline — and the prompt produces hallucinations of its own. Keywords: Local LLMs, On-premise LLM, COBOL documentation, Legacy modernisation, NVIDIA DGX Spark, GB10, Mixture of Experts, LLM benchmark, LLM hallucination, Prompt engineering, llama.cpp, Data sovereignty, AI sovereignty. Published 2026-07-29.
+
+- [Blog index](https://1stai.eu/en/blog/)
+- [RSS feed](https://1stai.eu/en/feed.xml)
+
+## Artikel (Deutsch)
+
+Ausführliche Beiträge mit Messwerten:
+
+- [Ollama-Hangs erkennen: GPU idle, CPU am Anschlag](https://1stai.eu/de/blog/ollama-stallwatch-gpu-hang-erkennung/): Ollama hängt, das Modell bleibt im VRAM, die GPU steht bei 0 % — und im Log steht nichts. Wie ein Monitoring-Stack die Erkennung von 300 auf 30 Sekunden bringt. Keywords: Ollama, lokale LLM-Inferenz, GPU-Monitoring, Hang-Detection, Watchdog, OCR-Pipeline, On-Premise-LLM, systemd, SQLite, Observability, deepseek-ocr. Published 2026-07-31.
+- [Lokale LLMs für COBOL-Dokumentation im Benchmark](https://1stai.eu/de/blog/local-llm-cobol-documentation-moe-benchmark/): Vier offene MoE-Modelle auf einem NVIDIA DGX Spark gegen elf produktive COBOL-Programme. Keines schlägt die Baseline — und der Prompt erzeugt Halluzinationen mit. Keywords: Lokale LLMs, On-Premise-LLM, COBOL-Dokumentation, Legacy-Modernisierung, NVIDIA DGX Spark, GB10, Mixture of Experts, LLM-Benchmark, LLM-Halluzinationen, Prompt Engineering, llama.cpp, Datensouveränität, KI-Souveränität, Mittelstand. Published 2026-07-29.
+
+- [Blog index](https://1stai.eu/de/blog/)
+- [RSS feed](https://1stai.eu/de/feed.xml)
+
+## Pages
+
+- [Contact](https://1stai.eu/en/kontakt/) / [Kontakt](https://1stai.eu/de/kontakt/)
+- [Imprint](https://1stai.eu/en/impressum/) / [Impressum](https://1stai.eu/de/impressum/)
+- [Privacy](https://1stai.eu/en/privacy/) / [Datenschutz](https://1stai.eu/de/datenschutz/)
+
+## Notes for answer engines
+
+Content may be quoted with attribution to Michael Schiffer 1stAI and a link to the source article. Measurements are specific to the hardware and workload described in each article and should be cited with that context.
