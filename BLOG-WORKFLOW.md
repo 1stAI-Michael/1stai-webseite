@@ -41,6 +41,16 @@ Regeln, die der Check erzwingt:
 - `articleSection` pro Sprache — erscheint als Kicker im Bild, 2–3 Wörter
 - Body beginnt bei **H2**; die H1 rendert die Seite aus `title`
 - interne Links **mit** Sprachprefix und Trailing Slash: `/de/kontakt/`
+- **Rechnernamen in Veröffentlichungen:** `GX-10`, `PC-30`, `PC-11`, `PC-10`.
+  Die internen Bezeichner mit `TI-`-Präfix kommen nicht in den Text — nicht weil
+  `PC-` sie unkenntlich macht (wer die Anlage kennt, liest die Zuordnung sofort),
+  sondern weil der Blocker interne Hostnamen sperrt und ein Text ohne sie auch
+  ohne Kontext lesbar bleibt. Kundensysteme werden **nie** benannt, auch nicht
+  umbenannt.
+- **Hardware-Modellnamen dürfen genannt werden** — `RTX 3090 Ti`, `Tesla V100`,
+  `GB10`. Eine Produktbezeichnung ist keine Adresse: Ein Hostname löst im Netz
+  auf, ein Kartenmodell nicht. Sie machen den Text glaubwürdiger und
+  nachrechenbar (Speichergröße, Bandbreite) — also nutzen.
 - keine internen Kennungen und keine Fremdnamen — der Check prüft Titel,
   Excerpt, Body, FAQ, Alt-Texte, Tags **und** die Social-Texte gegen
   `LEAK_PATTERNS` in `scripts/blog-check.mjs`: Ticket-IDs, Hostnamen, interne

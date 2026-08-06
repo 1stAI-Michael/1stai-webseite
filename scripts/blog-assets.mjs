@@ -139,6 +139,21 @@ function parseArgs(argv) {
 
 const MIME = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp" };
 
+/**
+ * Language-specific source, if present: a file ending in `-<lang>.<ext>` is used
+ * for that language only. Needed for rendered schematics, which carry text and
+ * therefore differ per language; photos stay shared.
+ */
+function pickSourceForLang(inboxDir, lang) {
+  if (!fs.existsSync(inboxDir)) return null;
+  const hit = fs
+    .readdirSync(inboxDir)
+    .filter((f) => MIME[path.extname(f).toLowerCase()])
+    .filter((f) => new RegExp(`-${lang}\\.[a-z]+$`, "i").test(f))
+    .sort()[0];
+  return hit ? path.join(inboxDir, hit) : null;
+}
+
 function pickSource(inboxDir, pick) {
   if (!fs.existsSync(inboxDir)) {
     throw new Error(
@@ -297,12 +312,15 @@ async function main() {
     process.exit(2);
   }
 
-  const { getLocalizedPost } = await import(path.join(ROOT, "src/content/blog/posts.js"));
+  // Deliberately not getLocalizedPost(): that one hides drafts, and a draft is
+  // exactly what needs images rendered for review.
+  const { posts, localizePost } = await import(path.join(ROOT, "src/content/blog/posts.js"));
+  const entry = posts.find((p) => p.slug === slug);
 
   const langs = args.lang && args.lang !== true ? [args.lang] : LANGS;
   const localized = [];
   for (const lang of langs) {
-    const post = getLocalizedPost(slug, lang);
+    const post = entry ? localizePost(entry, lang) : null;
     if (!post) {
       throw new Error(
         `No post "${slug}" with a "${lang}" block in src/content/blog/posts.js (draft: true also hides it).`
@@ -312,8 +330,7 @@ async function main() {
   }
 
   const inboxDir = path.join(ROOT, "blog-inbox", slug);
-  const sourceFile = pickSource(inboxDir, args.pick === true ? undefined : args.pick);
-  const imageUri = dataUri(sourceFile);
+  const sharedSource = pickSource(inboxDir, args.pick === true ? undefined : args.pick);
 
   const fonts = [
     fontFace("Space Grotesk", "SpaceGrotesk-latin-ext.woff2"),
@@ -338,14 +355,15 @@ async function main() {
     args: ["--no-sandbox", "--disable-dev-shm-usage", "--font-render-hinting=none"],
   });
 
-  console.log(`source: ${path.relative(ROOT, sourceFile)}`);
-
   try {
     for (const post of localized) {
       const { lang } = post;
+      const sourceFile = pickSourceForLang(inboxDir, lang) || sharedSource;
+      const imageUri = dataUri(sourceFile);
+      console.log(`\nsource (${lang}): ${path.relative(ROOT, sourceFile)}`);
       const outDir = path.join(ROOT, "public", "blog", slug, lang);
       fs.mkdirSync(outDir, { recursive: true });
-      console.log(`\n${lang}: ${post.title}`);
+      console.log(`${lang}: ${post.title}`);
 
       for (const name of requested) {
         const format = FORMATS[name];

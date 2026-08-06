@@ -236,11 +236,13 @@ async function main() {
     process.exit(2);
   }
 
-  const { getLocalizedPost } = await import(path.join(ROOT, "src/content/blog/posts.js"));
+  // Includes drafts on purpose — the preview is a review tool.
+  const { posts, localizePost } = await import(path.join(ROOT, "src/content/blog/posts.js"));
+  const entry = posts.find((p) => p.slug === slug);
 
   const sections = [];
   for (const lang of LANGS) {
-    const post = getLocalizedPost(slug, lang);
+    const post = entry ? localizePost(entry, lang) : null;
     if (!post) {
       console.warn(`! no "${lang}" block for ${slug} — skipped`);
       continue;

@@ -20,6 +20,634 @@
 export const posts = [
   // Newest first. Add new posts at the TOP of this array.
   {
+    slug: "llm-lastmanagement-routing-autoritaet",
+    date: "2026-08-01",
+    updated: "2026-08-01",
+    author: "Michael Schiffer",
+    de: {
+      title: "Telefonagent, OCR und Gastkunde auf denselben GPUs",
+      articleSection: "Lokale LLMs",
+      excerpt:
+        "Telefonagent, Belegerkennung und ein externer Gast auf denselben Karten: wie GPU-Lastmanagement entscheidet — und warum zwei Entscheidungsebenen eine zu viel sind.",
+      coverAlt:
+        "Schematische Darstellung eines LLM-Verbunds mit mehreren GPU-Endpunkten und einer zentralen Routing-Entscheidung",
+      tags: [
+        "LLM-Lastmanagement",
+        "GPU-Scheduling",
+        "lokale LLMs",
+        "Multi-Tenant",
+        "Concurrency",
+        "Shadow-Mode",
+        "Preemption",
+        "Auto-Discovery",
+        "Feature-Flag",
+        "Migration ohne Ausfall",
+        "On-Premise-LLM",
+        "Observability",
+      ],
+      bodyMarkdown: `Auf vier Rechnern mit insgesamt sechs Beschleunigern laufen bei mir drei Dinge gleichzeitig, die unterschiedlicher kaum sein könnten.
+
+**Ein Telefonagent.** Am anderen Ende wartet ein Mensch. Antwortet das System nicht in etwa einer Sekunde, ist das Gespräch kaputt — später ist wertlos.
+
+**Belegerkennung im Stapel.** Zehntausend Seiten, die über Nacht durchlaufen. Ob das Ergebnis um zwei oder um fünf Uhr morgens fertig ist, merkt niemand.
+
+**Auswertungen, die zeitnah gebraucht werden.** Ein Arztbrief, eine Zusammenfassung, eine Bewertung. Nicht in einer Sekunde, aber auch nicht morgen. Wer darauf wartet, arbeitet gerade.
+
+Dazu ein vierter Punkt, kaufmännisch der interessanteste: **Nachts und am Wochenende steht die Hardware still.** Diese freie Kapazität lässt sich nach außen verkaufen — an einen Kunden, der tagelange Stapelverarbeitung fährt und dem es gleich ist, wann sie fertig wird, solange sie günstig ist.
+
+Damit liegen vier Ansprüche auf derselben Hardware, und sie widersprechen sich. Der Telefonagent braucht sofort einen freien Platz. Der Stapel will alles nehmen, was da ist. Der externe Kunde soll zahlen, aber niemals den Telefonagenten ausbremsen. Und leer stehen soll die Hardware auch nicht.
+
+**GPU-Lastmanagement** entscheidet, welche Anfrage auf welchem Beschleuniger läuft und in welcher Reihenfolge. Wer diese Verteilung dem Zufall überlässt, bekommt beides falsch: wartende Menschen bei halb leerer Maschine.
+
+Bei mir war sie über zwei Monate gewachsen — nicht als Entscheidung, sondern als Ablagerung. Am Ende standen **zwei Ebenen, die beide entscheiden wollten**: eine Vorauswahl anhand einer Pool-Liste im Code, und darunter eine Score-Funktion, die umrouten konnte. Das Ergebnis waren 18 dokumentierte Fehlerbilder, die sich auf fünf Wurzeln zurückführen ließen. Vier davon hatten dieselbe: zwei Stellen beantworteten dieselbe Frage, und die zweite durfte die erste überstimmen.
+
+Die Reparatur war nicht, die Ebenen besser abzugleichen. Sie war, **eine zu löschen**.
+
+**Auf einen Blick:**
+
+- **Fähigkeit ist ein Filter, keine Punktzahl.** Ein Scoring-System findet immer einen Gewinner — auch wenn kein Kandidat den Request bedienen kann. „Kann dieser Endpunkt das überhaupt?" gehört vor die Bewertung, nicht hinein.
+- **Konfiguration in Tabellen statt in Konstanten.** Eine Präferenz zu ändern war vorher ein Deployment. Jetzt ist es ein UPDATE, das nach 15 Sekunden greift.
+- **Shadow-Mode ist billiger als Mut.** Rund 15 000 Doppelentscheidungen ohne Wirkung, 80 % Abweichung — und jede Abweichungsklasse zugunsten des Neuen.
+- **Der Engpass sitzt selten dort, wo man hinschaut.** Bei einem GPU-Dienst war der erste harte Engpass unter Last der Datenbank-Verbindungspool.
+
+## Die Ausgangslage: vier Rechner, drei Lastprofile
+
+Der Verbund ist absichtlich ungleich:
+
+| Rechner | Beschleuniger | Eigenschaft |
+|---|---|---|
+| **GX-10** | GB10, 128 GB gemeinsamer Speicher | bandbreitenbegrenzt, dafür große Modelle und lange Kontexte |
+| **PC-30** | RTX 3090 Ti + RTX 5060 Ti, zusammen 40 GB | Multi-GPU-Split, das Arbeitspferd |
+| **PC-11** | Tesla V100 32 GB + RTX 3060 | die V100 ist für latenzkritische Aufträge reserviert |
+| **PC-10** | RTX 3060 | eine Karte, teilt sie mit anderen Diensten |
+| — | gehosteter Endpunkt | Überlauf, wird nur bei Bedarf zugeschaltet |
+
+Sechs Beschleuniger aus vier Generationen, von einer Server-Karte von 2017 bis zu einem ARM-System von 2025. Diese Ungleichheit ist kein Versehen, sondern gewachsen — und sie ist der Grund, warum eine Routing-Regel überhaupt nötig ist. Bei sechs gleichen Karten würde Reihum genügen. Darauf laufen gleichzeitig drei Profile, die schlechter zueinander passen als es zunächst aussieht:
+
+| Profil | Charakter | Priorität |
+|---|---|---|
+| Produktion | latenzkritisch, tagsüber, viele kurze Aufträge | hoch |
+| Chat und Retrieval | Embeddings, kurze Antworten, dauernd ein wenig | mittel |
+| Externer Stapelbetrieb | mehrtägige Dauerlast über eine öffentliche Schnittstelle | Gast |
+
+![Endpunkt-Registry: acht Endpunkte auf vier ungleichen Maschinen, mit Status, Engine und Obergrenzen](/blog/llm-lastmanagement-routing-autoritaet/screens/de/registry.png)
+
+Der Gast ist der interessante Fall. Er fragt nicht höflich, er nimmt was da ist — und genau dafür ist er gedacht. Ein Lastmanagement, das ihn ausbremst, verschenkt nachts die Hardware. Eines, das ihn nicht begrenzt, bringt tagsüber die Produktion zum Stillstand.
+
+## Vier Fehlerbilder und was sie gemeinsam hatten
+
+**Der Modell-Tag-Zufall.** Nur einer der Endpunkte meldete den Modellnamen exakt so, wie der aufrufende Client ihn schickte; die übrigen benannten ihr Modell intern nach dem Dateipfad der Gewichte. Die Score-Funktion gab „Modell ist hier schon geladen" 100 Punkte — also gewann immer derselbe Endpunkt. Bei vollem Hauptpool stauten sich acht Anfragen auf einen einzigen Slot, während vier gesunde Slots auf der großen Maschine leer standen. Der überlastete Endpunkt begann zwischen gesund und ausgefallen zu pendeln.
+
+Der Punkt ist nicht der Zählfehler. Der Punkt ist, dass ein **String-Vergleich** über die Lastverteilung entschied.
+
+**Der Fähigkeits-Fehler.** Der Kandidatenfilter prüfte die *Kapazität*, aber nicht die *Fähigkeit*. Eine Chat-Anfrage konnte deshalb auf einem Endpunkt landen, der ausschließlich Reranking anbietet — der hat keinen Chat-Pfad, also HTTP 404. Fünfmal in sechs Minuten, dann Rollback.
+
+**Der Körper folgt der falschen Ebene.** Routete die untere Ebene um, war der Request-Körper immer noch für den vorausgewählten Endpunkt gebaut: ein Format gegen einen Pfad, der ein anderes erwartet. Geflickt wurde das mit einer Funktion, die den Körper nach dem Landen nochmal anpasst — ein Pflaster auf einem Konstruktionsfehler.
+
+**Das Leck in der Slot-Zählung.** Zählen, entscheiden, platzieren — ohne Sperre dazwischen. Ein klassisches Prüfen-dann-Handeln. Unter Last überschritt die tatsächliche Belegung das konfigurierte Limit, und zwar zuverlässig.
+
+Dazu kam ein fünfter, der keine Fehlfunktion war, sondern ein Betriebsproblem: **Die Gesundheitsprüfung stand in derselben Warteschlange wie die Nutzlast.** Sie musste ein echter Mini-Aufruf sein, weil eine reine Statusabfrage auch dann Erfolg meldet, wenn die Inferenz-Engine tot ist. Bei gesättigtem Endpunkt lief sie deshalb in den Timeout — und der Endpunkt wurde als ausgefallen markiert, obwohl er einfach nur beschäftigt war.
+
+## Fünf Wurzeln
+
+Aus den 18 Fehlerbildern blieben nach dem Sortieren fünf Ursachen:
+
+1. **Eine einzige Routing- und Slot-Wahrheit** statt zwei entkoppelter Ebenen. Kandidaten nach **Fähigkeit** filtern, nicht nach Namensähnlichkeit.
+2. **Atomare, hart erzwungene Parallelität.** Reale Hardware-Slots als Obergrenze, kein Prüfen-dann-Handeln.
+3. **Gesundheitsprüfung außerhalb der Nutzlast-Warteschlange** und typbewusst.
+4. **Kapazität selbst erkennen** statt handgepflegter Obergrenzen.
+5. **Profile voneinander entkoppeln**, damit ein Gast die Produktion nicht aushungert.
+
+Und ein sechster Wunsch, der sich im Betrieb als der wichtigste erwies: **Die harten Hebel lagen im Code.** Pool-Zusammensetzung, Reihenfolge, Obergrenzen, Kontext-Schwellen — alles Konstanten. Jede Änderung an der Hardware bedeutete: Code ändern, ausliefern, hoffen.
+
+## Die Datenbank wird die Wahrheit
+
+Die zentrale Entscheidung des Neuaufbaus ist unspektakulär und hat alles andere leichter gemacht: **Alles, was das Routing entscheidet, steht in Tabellen. Nichts mehr im Code.**
+
+Endpunkt-Registry mit URL, Engine-Typ, Schnittstellenformat, Obergrenzen für parallele Anfragen und gleichzeitig geladene Modelle. Kanonische Modell-Bezeichner samt Alias-Tabelle für die Namen, die Clients benutzen. Profile mit Priorität und Kontingent, plus eine Erlaubnis-Matrix Profil × Endpunkt. Konfiguration als Schlüssel-Wert-Paare mit Änderungshistorie und Begründungsfeld.
+
+Das Herz ist eine **Fähigkeits-Matrix**: eine Zeile je Endpunkt und Modell, und in dieser Zeile steht der exakte Modellname, den *dieser* Endpunkt versteht, dazu maximale Kontextlänge, Anzahl Slots und ein Präferenz-Rang.
+
+Zwei Details daraus haben sich als goldrichtig erwiesen.
+
+**Der endpunktspezifische Modellname.** Genau hier stirbt der Modell-Tag-Zufall. Der Client schickt einen Alias, die Matrix übersetzt ihn je Endpunkt in den String, den das jeweilige Backend erwartet. Kein Vergleich von Zeichenketten, kein Bonus für zufällige Namensgleichheit.
+
+**Der Präferenz-Rang als Spalte.** Die Reihenfolge, in der Endpunkte bevorzugt werden, ist eine Zahl. Sie zu ändern ist ein UPDATE, kein Deployment. In der Oberfläche sind es zwei Pfeiltasten.
+
+![Fähigkeits-Matrix: eine Zeile je Endpunkt und Modell, mit endpunktspezifischem Backend-Namen, Rang und konfigurierten gegen entdeckte Slots](/blog/llm-lastmanagement-routing-autoritaet/screens/de/matrix.png)
+
+## Die Engine: Kandidaten statt Punkte
+
+Der Kern ist bewusst langweilig. Kein Wettbewerb um die höchste Punktzahl, sondern ein Filter über die Fähigkeits-Matrix — ein Endpunkt ist Kandidat oder er ist keiner:
+
+- falsches Modell oder falscher Aufgabentyp → kein Kandidat
+- Endpunkt deaktiviert → kein Kandidat
+- Profil hat für diesen Endpunkt keine Erlaubnis → kein Kandidat
+- geforderte Kontextlänge größer als die Zeile erlaubt → kein Kandidat
+- Endpunkt als ausgefallen bekannt → kein Kandidat
+
+Der Aufgabentyp in dieser Liste ist die Stelle, an der der 404 aus dem dritten Abschnitt **strukturell unmöglich** wird: Eine Chat-Anfrage sieht Reranking-Zeilen gar nicht.
+
+Die Auswahl unter den echten Kandidaten ist dann trivial und deterministisch: Präferenz-Rang aufsteigend, gesund vor angeschlagen, danach die meisten freien Slots.
+
+Wichtig für den Betrieb ist nicht die Auswahl, sondern ihre **Begründung**: Jede Reservierung schreibt mit, *warum* dieser Endpunkt gewählt wurde — erste Wahl, erste Wahl war voll, Anheftung hat den Rang überstochen, Modell wurde einem Gast weggenommen. Eine Verteilungsanomalie erklärt man damit in einer einzigen Abfrage, statt sie zu erraten.
+
+![Prüfspur: je Reservierung Zeit, Profil, Aufrufer, Modell, Endpunkt, Routing-Grund und Dauer](/blog/llm-lastmanagement-routing-autoritaet/screens/de/audit.png)
+
+**Atomar reservieren.** Der ganze Zyklus — Kandidaten bilden, zählen, auswählen, Slot eintragen — läuft unter einer Sperre. Ist alles besetzt, wartet der Aufrufer an einer Bedingungsvariable, die beim Freigeben geweckt wird, mit periodischer Neubewertung, weil sich die Registry zwischenzeitlich geändert haben kann. Das Leck in der Slot-Zählung ist damit kein Tuning-Problem mehr, sondern weg.
+
+## Die vollständige Auftragsbeschreibung
+
+Die Engine liefert nicht „welcher Endpunkt", sondern die **komplette Spezifikation des Aufrufs**: Basis-URL, Schnittstellenformat, Aufgabentyp, der für diesen Endpunkt gültige Modellname, die zu sendende Kontextlänge, die Kopfzeilen. Der Aufrufer baut daraus seinen HTTP-Aufruf und trifft selbst **keine** Routing-Entscheidung mehr.
+
+Damit ist die ganze Fehlerklasse „Körper passt nicht zum Endpunkt" erledigt — nicht behandelt, sondern konstruktiv ausgeschlossen. Das Pflaster von vorher konnte weg.
+
+Ein Detail, das die Betreiber der GPU-Knoten sich gewünscht hatten: eine Kopfzeile mit dem anfragenden Profil. Am Backend lässt sich jetzt nachvollziehen, *wer* gerade die Karte belegt. Vorher war jede Anfrage anonym derselbe Client.
+
+Die Kontextlänge bekam eine klare Autoritätsregel, und die ist asymmetrisch: **nach außen erzwungen**, damit kein Client durch eine überhöhte Angabe einen Modell-Neuladevorgang provozieren kann; **nach innen gedeckelt**, damit ein interner Plan bewusst kleiner anfordern darf, aber nie größer als die Matrix erlaubt.
+
+## Verdrängung: Modell-Plätze statt abgebrochener Anfragen
+
+Manche Engines haben ein zweites, subtileres Limit: nicht nur wie viele Anfragen parallel laufen, sondern **wie viele verschiedene Modelle gleichzeitig geladen sein dürfen**.
+
+Braucht eine Anfrage ein neues Modell auf einem Knoten, dessen Modell-Plätze belegt sind, sucht die Engine ein Opfer: einen aktiven Slot mit strikt niedrigerer Priorität, der **alleiniger Nutzer seines Modells** ist. Teilen sich mehrere dasselbe Modell, würde ein Entladen nichts bringen.
+
+Der wichtigste Teil ist der Negativfall. **Findet sich kein Opfer, fällt der Endpunkt für diese Runde einfach aus den Kandidaten.** Kein Fehler, kein Hin-und-Her — der nächste Kandidat wird geprüft. Das ist der Unterschied zwischen einem System, das unter Druck degradiert, und einem, das unter Druck oszilliert.
+
+Und zur Erwartungshaltung: Verdrängung bricht **keine laufenden Anfragen** ab. Ein Datenstrom läuft durch. Verdrängt wird nur die Berechtigung, als nächstes zu starten.
+
+## Kapazität selbst finden
+
+Die Obergrenzen waren vorher handgesetzt und drifteten nach jeder Änderung an der Hardware. Nach einem Stromausfall kam der Verbund kleiner zurück als er vorher war — und niemand merkte es, außer an einer steigenden Rate abgewiesener Anfragen.
+
+Der Abfrage-Dienst läuft **außerhalb der Nutzlast-Warteschlange**, das war die Lehre aus der pendelnden Gesundheitsprüfung, und er fragt typbewusst: bei einer Engine die Prometheus-Metriken, bei einer anderen die Liste geladener Modelle, bei den übrigen einen leichten Erreichbarkeitstest, bei dem ein 4xx „lebt" bedeutet und nur 5xx und Timeout „ausgefallen".
+
+Zwei Regeln haben sich als essenziell erwiesen:
+
+**Erkennung darf nur nach unten korrigieren.** Der gemeldete Wert ist Zweitquelle, nie Vergrößerung. Ein Knoten, der sich verschätzt, kann den Verbund nicht überbuchen.
+
+**Angekündigte Endpunkte werden nie automatisch übernommen.** Taucht ein unbekannter Endpunkt in einem Bericht auf, gibt es eine Warnung und einen Vorschlag für die Oberfläche — kein Eintrag. Ein fremder Knoten soll sich nicht selbst ins Routing schreiben können.
+
+Der erste Erkennungslauf lieferte prompt einen Befund, den vorher niemand hatte: Zwei Endpunkte, für die vier Slots konfiguriert waren, meldeten real **einen**. Der konfigurierte Wert war seit Wochen Fiktion.
+
+Darauf sitzt eine kleine Regelschleife: Das Kontingent des Gast-Profils folgt automatisch der Summe der gesunden, freigegebenen Slots — mit Untergrenze und zwei Takten Verzögerung, damit ein einzelner Fehlversuch das Limit nicht zappeln lässt. Vorher war das eine Abstimmung per Dokument zwischen mehreren Beteiligten.
+
+## Der Umstieg: Shadow-Mode und ein Schalter in der Datenbank
+
+Das ist eine Produktionsmaschine. Ein Umstieg auf einen Schlag war keine Option.
+
+Der eigentliche Hebel ist ein einziger Konfigurationsschlüssel mit drei Konsumentengruppen und je drei möglichen Werten: alt, Schatten, neu. Die Konfiguration wird 15 Sekunden zwischengespeichert — ein UPDATE greift also nach spätestens 15 Sekunden, **ohne Neustart**. Der Rollback ist dasselbe UPDATE rückwärts.
+
+### Der Schatten
+
+Der interessanteste Schritt. Im Schatten-Betrieb entscheidet weiterhin das alte System — aber jede echte Reservierung wird von der neuen Engine **nachträglich trocken nachentschieden**, und beide Antworten werden verglichen protokolliert. Kein Slot wird belegt, keine Latenz entsteht: Die Auswertung läuft im Speicher, die Schreibvorgänge gebündelt.
+
+Damit der Vergleich billig bleibt, ist „haben alt und neu dasselbe entschieden?" keine Anwendungslogik, sondern eine berechnete Spalte in der Tabelle. Ein Index-Scan statt einer Auswertung.
+
+Nach knapp **15 000 Vergleichen** — vier Stunden Volllast des externen Stapelbetriebs plus ein kompletter Produktionsdurchlauf — stand da eine Zahl, die erst einmal wehtat: **80 % Abweichung.**
+
+Die Auflösung: Jede einzelne Abweichungsklasse war „das Neue hat recht".
+
+| Klasse | Was passierte | Bewertung |
+|---|---|---|
+| Überlauf | Alt platzierte über die realen Slots hinaus, Neu hält harte Obergrenzen und weicht aus | Neu hat recht |
+| Hätte gewartet | Bei Totalsättigung platzierte Alt trotzdem — das Zählleck, live beobachtet | Neu hat recht |
+| Doppelbelegung | Alt legte zwei Produktionsmodelle auf einen Ein-Slot-Endpunkt, **während dort ein Gast-Auftrag lief** | Neu hat recht |
+| Erstwahl übersprungen | Der bevorzugte Endpunkt galt dem alten Gesundheitscheck als ausgefallen | korrekt |
+
+Der dritte Fall war der Moment, in dem sich der Aufwand für den Schatten-Betrieb bezahlt hat: Ein Problem, das vorher nur theoretisch beschrieben war, wurde **live beim Passieren** dokumentiert — ohne dass jemand eingreifen musste.
+
+Nebenbefund des Einbrennens: Die Auswertungszeit der neuen Engine lag im 95. Perzentil bei **103 Mikrosekunden**, bei null Ausnahmen.
+
+### Nacheinander umschalten
+
+Drei Konsumentengruppen, drei getrennte Umstiege, jeder mit eigenem Prüfschritt.
+
+Zuerst die **externe Schnittstelle** — dort ist das Risiko am besten kontrollierbar und der Nutzen am größten. Verifikation in einem Zehn-Minuten-Fenster: 321 Anfragen, Verteilung wie erwartet, null Fehler, null der gefürchteten 404er. Das alte System lief exakt 16 Sekunden nach dem Umschalten aus — die Lebensdauer des Konfigurations-Zwischenspeichers.
+
+Dann die **internen Konsumenten**, also die Produktion. Der Trick, der das billig machte: Die Datenstruktur des Slot-Kontexts blieb **byte-kompatibel**. Zehn interne Aufrufstellen wurden nicht angefasst; ihre Client-Bezeichner werden per Mustervergleich auf Profile abgebildet. Null Codeänderung an den Aufrufern, volle Sichtbarkeit nach Profil.
+
+Zuletzt ein Nachbar-Host, der über die Schnittstelle reserviert. Damit schloss sich die letzte Lücke für Doppelbelegungen.
+
+Für die Übergangszeit gab es eine **Brücke**: Solange das alte System parallel Slots hielt, zählte die neue Engine dessen aktive Slots mit. Die Slot-Mengen waren disjunkt, die Summe also die echte Belegung. Ohne diese Brücke hätte die neue Engine dieselben GPUs doppelt belegt, während die Produktion dort arbeitete.
+
+Und ein Zwischenstand, den man ehrlich dokumentieren muss: Es gab ein Zeitfenster, in dem die *umgekehrte* Brücke fehlte — das alte System sah die neuen Slots nicht. Das entsprach exakt dem Verhalten von vorher, war also keine Verschlechterung, aber eben auch keine Verbesserung. Der Notfallhebel dafür war, dem Gast-Profil die Erlaubnis für die betroffenen Endpunkte zu entziehen. Wirkung: 15 Sekunden.
+
+## Die Oberfläche: Hebel sichtbar machen
+
+Der ganze Umbau wäre halb so viel wert, wenn die Steuerung wieder in SQL läge. Also gibt es eine Seite mit fünf Bereichen.
+
+**Live** — welche Konsumentengruppe auf welchem System läuft, der Umstiegszustand auf einen Blick. Dazu Gast-Kontingent Ziel gegen Ist, alle aktiven Slots mit Profil, Modell, Endpunkt und Alter im Fünf-Sekunden-Takt, und Endpunkt-Gesundheit mit Ein-Aus-Schalter.
+
+**Matrix** — die Fähigkeits-Matrix. Pro Zeile: Endpunkt, Modell, Kontextlänge, konfigurierte gegen **entdeckte** Slots mit Markierung bei Abweichung, Präferenz-Rang mit Pfeiltasten, Slots direkt editierbar. Das ist die Seite, auf der früher ein Deployment nötig war.
+
+**Profile** — Prioritäten, Kontingente, Endpunkt-Erlaubnisse und die Zuordnungsregeln. Letztere absichtlich nur lesbar: Wer welchen internen Dienst wohin lässt, ändert man nicht im Vorbeigehen.
+
+**Konfiguration** — alle Schlüssel mit Inline-Bearbeitung, Änderungshistorie und **Rollback-Schaltfläche**. Jede Änderung trägt eine Begründung. Der Umstieg selbst ist hier ein Eintrag.
+
+**Prüfspur** — die letzten Reservierungen mit Profil, Endpunkt, Modell, Routing-Grund und Dauer. Sechs Felder, und man weiß, was passiert ist.
+
+Bewusst **nicht** gebaut: das Anlegen neuer Endpunkte und die Ein-Klick-Übernahme angekündigter Endpunkte. Beides bleibt SQL. Für Aktionen, die die Topologie erweitern, ist ein bisschen Reibung ein Merkmal, kein Mangel.
+
+## Drei Befunde aus dem Betrieb danach
+
+**Der Engpass war die Datenbank, nicht die GPU.** Als der externe Stapelbetrieb mit 16 parallelen Arbeitern fuhr, lautete das Symptom „es wird keine Anfrage mehr beendet". Naheliegende Vermutung: GPU überlastet. Tatsächlich war es der Verbindungspool: Die Reservierung schrieb ihren Prüfeintrag im selben Aufruf und bekam keine Verbindung mehr, weil der Pool klein war und von der ganzen Anwendung geteilt wurde. Hänger bis in den Bereich einer halben Minute — **vor** dem eigentlichen Modellaufruf. Die Datenbank selbst hatte massig Luft: etwa ein Viertel der Verbindungen belegt. Rein clientseitig.
+
+**Eine kleine Karte schlug die große Maschine.** Bei den Embeddings zeigte eine Messung, dass ein kleiner Dienst auf einer älteren Karte bei kurzen Embedding-Anfragen rund **viermal mehr Token pro Sekunde** schaffte als der große Knoten. Dort teilt sich der Embedding-Dienst die Speicherbandbreite mit zwei Chat-Instanzen und bekommt nur einen Slot. Die Umstellung der Primärroute war ein Rangtausch — *fast*. Es mussten drei Schichten fallen, bis der Wechsel griff: der Rang in der neuen Matrix, eine Anheftungsliste im Aufrufer-Code und ein Eintrag in der alten Registry, den der Gesundheitscheck noch befragte. Der neue Endpunkt fehlte dort, galt deshalb als ausgefallen und rutschte ans Listenende. Ein Lehrstück über Doppel-Registries: Solange die Aufräumphase nicht durch ist, muss ein neuer Endpunkt in *beide* Verzeichnisse.
+
+**Eine Welle abgewiesener Anfragen bei gleichzeitig leerlaufenden GPUs.** Ursache war keine Überlast, sondern eine Anfrageklasse, die durch die Kontextrechnung nur auf einer *kleinen Teilmenge* der Endpunkte laufen durfte — ein großzügig gesetztes Ausgabe-Budget bei kleinem Eingabetext reserviert Kontext, den nur ein Endpunkt bietet. Diese Teilmenge war dauerbelegt, alle Warter hielten Begrenzer-Slots. Sichtbar wurde das über eine Kreuztabelle aus Ausgabeklasse und Routing-Grund. Der Fix lag beim Client, gefunden wurde er in einer Datenbankabfrage.
+
+Eine spätere Ausbaustufe trennte dann noch das Zulassungsbudget **je Aufgabentyp**: Chat und Embeddings teilten sich eines, obwohl sie auf verschiedenen Pools laufen — ein Anreicherungslauf konnte damit die Embeddings aushungern.
+
+## Was ich daraus mitnehme
+
+**Zwei Entscheidungsebenen sind eine Ebene zu viel.** Fast jeder harte Fehler kam daher, dass zwei Stellen dieselbe Frage beantworteten. Die Reparatur war nicht bessere Synchronisation, sondern Löschen.
+
+**Fähigkeit ist ein Filter, keine Punktzahl.** Ein Scoring-System findet immer einen Gewinner, auch wenn keiner passt.
+
+**Konfiguration gehört in Tabellen.** Nicht aus Eleganz, sondern weil sich Hardware ändert und ein Deployment zum Ändern einer Präferenz die falsche Kostenstruktur hat. Der Test eines Rangwechsels dauert jetzt 15 Sekunden, inklusive Rückweg.
+
+**Ein Schalter in der Datenbank schlägt einen Feature-Branch.** Jeder Umstieg war reversibel, ohne Neustart, ohne Deployment — und die Historie steht als Zeile in einer Tabelle.
+
+**Der teuerste Teil eines verteilten Systems ist die Zeit, in der niemand weiß, warum es das gerade getan hat.** Deshalb steht in jeder Prüfzeile der Routing-Grund. Das ist die Zeile, mit der jede Diagnose anfängt, und die einzige Maßnahme aus diesem Umbau, die ich in jedem vergleichbaren System zuerst bauen würde.
+
+## Grenzen
+
+- **Ein Verbund, eine Arbeitslast, ein Beobachter.** Die Zahlen gelten für diesen Aufbau. Ob 80 % Abweichung typisch sind oder ein Sonderfall eines besonders gewachsenen Alt-Systems, kann ich nicht sagen.
+- **Die Abweichungsklassen habe ich selbst bewertet.** „Neu hat recht" ist ein Urteil, kein Messwert — auch wenn es je Klasse begründet ist.
+- **Kein A/B-Vergleich der Endzustände.** Gemessen wurde alt gegen neu in der Entscheidung, nicht Durchsatz vorher gegen nachher über eine vergleichbare Woche.
+- **Die Verdrängung ist auf Engines mit Modell-Plätzen zugeschnitten.** Für Engines, die ein Modell dauerhaft halten, ist der Mechanismus überflüssig.
+- **Das Muster passt zu kleinen, heterogenen Verbünden.** Bei homogener Hardware in Größenordnungen, wo ein etablierter Scheduler in Frage kommt, wäre der Eigenbau die falsche Antwort.`,
+      faq: [
+        {
+          q: "Wie verteilt man Last über mehrere lokale LLM-Endpunkte?",
+          a: "Über eine einzige Entscheidungsstelle, die Kandidaten nach Fähigkeit filtert statt nach Punkten zu bewerten: passendes Modell, passender Aufgabentyp, Erlaubnis für das anfragende Profil, ausreichende Kontextlänge, Endpunkt nicht ausgefallen. Unter den echten Kandidaten entscheidet dann ein konfigurierter Präferenz-Rang, danach die Zahl freier Slots. Zwei Ebenen, die beide entscheiden dürfen, erzeugen zuverlässig Fehler.",
+        },
+        {
+          q: "Warum ist ein Scoring-System für LLM-Routing problematisch?",
+          a: "Weil es immer einen Gewinner findet — auch wenn kein Endpunkt die Anfrage bedienen kann. Im beobachteten Fall bekam ein Endpunkt 100 Bonuspunkte dafür, dass er den Modellnamen zufällig genauso schrieb wie der aufrufende Client, und zog dadurch die gesamte Last auf einen einzigen Slot. Die Frage «kann dieser Endpunkt das überhaupt» gehört vor die Bewertung, nicht als Gewichtung hinein.",
+        },
+        {
+          q: "Was ist ein Shadow-Mode bei einer Routing-Umstellung?",
+          a: "Das alte System entscheidet weiter und wirkt, das neue entscheidet parallel trocken mit, und beide Antworten werden verglichen protokolliert. Kein Slot wird belegt, keine Latenz entsteht. In diesem Fall ergaben einige Tausend Vergleiche weit über die Hälfte Abweichung — und jede Abweichungsklasse sprach für das neue System, darunter eine Doppelbelegung, die vorher nur theoretisch beschrieben war.",
+        },
+        {
+          q: "Wie begrenzt man einen externen Gast-Nutzer, ohne die Produktion zu bremsen?",
+          a: "Über Profile mit Priorität und eine Erlaubnis-Matrix Profil × Endpunkt, dazu ein Kontingent, das automatisch der Summe der gesunden freigegebenen Slots folgt. Verdrängung greift nur gegen strikt niedrigere Priorität und nur bei Modellen, die kein anderer Slot mitbenutzt. Findet sich kein Opfer, fällt der Endpunkt aus den Kandidaten statt einen Fehler zu erzeugen.",
+        },
+        {
+          q: "Warum sollte eine Gesundheitsprüfung außerhalb der normalen Warteschlange laufen?",
+          a: "Weil eine aussagekräftige Prüfung ein echter Mini-Aufruf sein muss — eine reine Statusabfrage meldet auch dann Erfolg, wenn die Inferenz-Engine tot ist. Steht dieser Aufruf in derselben Warteschlange wie die Nutzlast, läuft er bei gesättigtem Endpunkt in den Timeout, und der Endpunkt wird als ausgefallen markiert, obwohl er nur beschäftigt ist. Das erzeugt Pendeln zwischen gesund und ausgefallen.",
+        },
+        {
+          q: "Sollte man die Kapazität von LLM-Endpunkten konfigurieren oder erkennen?",
+          a: "Beides, mit klarer Vorfahrt: konfigurieren als Obergrenze, erkennen als Korrektiv nach unten. Der erkannte Wert darf nie vergrößern, sonst kann ein Knoten, der sich verschätzt, den Verbund überbuchen. Im beobachteten Fall meldeten zwei Endpunkte real einen Slot, wo vier konfiguriert waren — der Wert war seit Wochen Fiktion und fiel nur durch eine steigende Abweisungsrate auf.",
+        },
+        {
+          q: "Wie stellt man ein Routing im Produktivbetrieb um, ohne Ausfall?",
+          a: "Mit einem Konfigurationsschalter je Konsumentengruppe und drei Werten: alt, Schatten, neu. Wird die Konfiguration nur kurz zwischengespeichert, greift ein UPDATE nach Sekunden und der Rollback ist dasselbe UPDATE rückwärts — ohne Neustart, ohne Deployment. Solange beide Systeme parallel Slots halten, braucht es eine Brücke, die die Belegung des jeweils anderen mitzählt, sonst wird dieselbe GPU doppelt belegt.",
+        },
+      ],
+      sources: [
+        {
+          title: "PostgreSQL — Generated Columns (Grundlage der Abweichungs-Auswertung)",
+          url: "https://www.postgresql.org/docs/current/ddl-generated-columns.html",
+        },
+        {
+          title: "Python asyncio — Locks und Conditions für atomare Reservierung",
+          url: "https://docs.python.org/3/library/asyncio-sync.html",
+        },
+        {
+          title: "llama.cpp server — Slots und Prometheus-Metriken",
+          url: "https://github.com/ggml-org/llama.cpp/tree/master/tools/server",
+        },
+        {
+          title: "Ollama API — geladene Modelle und keep_alive",
+          url: "https://github.com/ollama/ollama/blob/main/docs/api.md",
+        },
+        {
+          title: "SQLAlchemy — Connection Pooling und Pool-Grenzen",
+          url: "https://docs.sqlalchemy.org/en/20/core/pooling.html",
+        },
+        {
+          title: "Google SRE Book — Handling Overload",
+          url: "https://sre.google/sre-book/handling-overload/",
+        },
+      ],
+    },
+    en: {
+      title: "Voice agent, OCR and guest load on the same GPUs",
+      articleSection: "Local LLMs",
+      excerpt:
+        "A voice agent, OCR batches and an external guest on the same cards: how GPU load management decides — and why two decision layers are one too many.",
+      coverAlt:
+        "Schematic view of an LLM cluster with several GPU endpoints and a single central routing decision",
+      tags: [
+        "LLM load management",
+        "GPU scheduling",
+        "local LLMs",
+        "multi-tenant",
+        "concurrency",
+        "shadow mode",
+        "preemption",
+        "auto-discovery",
+        "feature flag",
+        "zero-downtime migration",
+        "on-premise LLM",
+        "observability",
+      ],
+      bodyMarkdown: `Across four machines with six accelerators between them, three things run here at the same time that could hardly be more different.
+
+**A voice agent.** There is a person on the other end. If the system does not answer within roughly a second, the conversation is broken — later is worthless.
+
+**Document recognition in batches.** Ten thousand pages running through overnight. Whether the result is ready at two or at five in the morning, nobody notices.
+
+**Evaluations that are needed promptly.** A letter, a summary, an assessment. Not within a second, but not tomorrow either. Whoever is waiting for it is working right now.
+
+And a fourth point, commercially the most interesting: **at night and at weekends the hardware sits idle.** That spare capacity can be sold — to a customer running multi-day batch work who does not care when it finishes, as long as it is cheap.
+
+So four claims rest on the same hardware, and they contradict each other. The voice agent needs a free slot immediately. The batch wants everything available. The external customer should pay, but must never slow the voice agent down. And the hardware should not sit idle either.
+
+**GPU load management** decides which request runs on which accelerator, and in what order. Leave that distribution to chance and you get both wrong at once: people waiting while the machine is half empty.
+
+Mine had grown over two months — not as a decision but as a sediment. What stood at the end were **two layers that both wanted to decide**: a pre-selection from a pool list in the code, and beneath it a scoring function that could re-route. The result was 18 documented faults which reduced to five root causes. Four of them shared one: two places answered the same question, and the second was allowed to override the first.
+
+The fix was not to reconcile the layers better. It was to **delete one**.
+
+**At a glance:**
+
+- **Capability is a filter, not a score.** A scoring system always finds a winner — even when no candidate can serve the request. "Can this endpoint do it at all?" belongs before the evaluation, not inside it.
+- **Configuration in tables, not in constants.** Changing a preference used to be a deployment. Now it is an UPDATE that takes effect within 15 seconds.
+- **A shadow mode is cheaper than courage.** Roughly 15,000 duplicate decisions with no effect, 80 % divergence — and every divergence class favoured the new engine.
+- **The bottleneck is rarely where you look.** For a GPU service, the first hard bottleneck under load was the database connection pool.
+
+## The starting point: four machines, three usage profiles
+
+The cluster is deliberately uneven:
+
+| Machine | Accelerators | Property |
+|---|---|---|
+| **GX-10** | GB10, 128 GB shared memory | bandwidth-bound, but takes large models and long contexts |
+| **PC-30** | RTX 3090 Ti + RTX 5060 Ti, 40 GB combined | multi-GPU split, the workhorse |
+| **PC-11** | Tesla V100 32 GB + RTX 3060 | the V100 is reserved for latency-critical work |
+| **PC-10** | RTX 3060 | a single card, shared with other services |
+| — | hosted endpoint | overflow, enabled only when needed |
+
+Six accelerators across four generations, from a 2017 server card to a 2025 ARM system. That unevenness is not an oversight but an accretion — and it is the reason a routing rule is needed at all. With six identical cards, round-robin would do. Three profiles run on it at once, and they fit together worse than it first appears:
+
+| Profile | Character | Priority |
+|---|---|---|
+| Production | latency-critical, daytime, many short jobs | high |
+| Chat and retrieval | embeddings, short answers, a little all the time | medium |
+| External batch | multi-day sustained load over a public interface | guest |
+
+![Endpoint registry: eight endpoints across four unequal machines, with status, engine and ceilings](/blog/llm-lastmanagement-routing-autoritaet/screens/en/registry.png)
+
+The guest is the interesting case. It does not ask politely, it takes what is available — and that is exactly what it is for. Load management that throttles it wastes the hardware overnight. Load management that does not bound it brings production to a halt during the day.
+
+## Four faults and what they had in common
+
+**The model-tag coincidence.** Only one endpoint reported the model name exactly as the calling client sent it; the others named their model internally after the path of the weights file. The scoring function awarded 100 points for "model already loaded here" — so the same endpoint always won. With the main pool full, eight requests queued onto a single slot while four healthy slots on the large machine sat idle. The overloaded endpoint began flapping between healthy and down.
+
+The point is not the counting error. The point is that a **string comparison** decided load distribution.
+
+**The capability error.** The candidate filter checked *capacity* but not *capability*. A chat request could therefore land on an endpoint that only offers reranking — which has no chat path, hence HTTP 404. Five times in six minutes, then rollback.
+
+**The body follows the wrong layer.** When the lower layer re-routed, the request body was still built for the pre-selected endpoint: one format against a path expecting another. This was patched with a function that adjusts the body after landing — a plaster over a design fault.
+
+**The leak in slot counting.** Count, decide, place — with no lock in between. A classic check-then-act. Under load the actual occupancy exceeded the configured limit, reliably.
+
+A fifth was not a malfunction but an operational problem: **the health probe stood in the same queue as the payload.** It had to be a real miniature call, because a plain status endpoint returns success even when the inference engine is dead. On a saturated endpoint it therefore ran into the timeout — and the endpoint was marked down when it was merely busy.
+
+## Five root causes
+
+After sorting, the 18 faults left five causes:
+
+1. **A single routing and slot truth** instead of two decoupled layers. Filter candidates by **capability**, not by name similarity.
+2. **Atomic, hard-enforced concurrency.** Real hardware slots as the ceiling, no check-then-act.
+3. **Health probing outside the payload queue**, and type-aware.
+4. **Detect capacity** instead of hand-maintaining ceilings.
+5. **Decouple the profiles** so a guest cannot starve production.
+
+And a sixth wish that turned out to matter most in operation: **the hard levers lived in the code.** Pool composition, ordering, ceilings, context thresholds — all constants. Every change to the hardware meant: change code, ship, hope.
+
+## The database becomes the truth
+
+The central decision of the rebuild is unspectacular and made everything else easier: **everything that decides routing lives in tables. Nothing in the code any more.**
+
+An endpoint registry with URL, engine type, interface format, ceilings for concurrent requests and simultaneously loaded models. Canonical model identifiers plus an alias table for the names clients use. Profiles with priority and quota, plus a permission matrix of profile × endpoint. Configuration as key-value pairs with change history and a reason field.
+
+The heart is a **capability matrix**: one row per endpoint and model, and in that row the exact model name *this* endpoint understands, along with maximum context length, slot count and a preference rank.
+
+Two details from it proved exactly right.
+
+**The endpoint-specific model name.** This is where the model-tag coincidence dies. The client sends an alias, the matrix translates it per endpoint into the string that particular backend expects. No string comparison, no bonus for accidental name equality.
+
+**The preference rank as a column.** The order in which endpoints are preferred is a number. Changing it is an UPDATE, not a deployment. In the UI it is two arrow buttons.
+
+![Capability matrix: one row per endpoint and model, with the endpoint-specific backend name, rank and configured versus detected slots](/blog/llm-lastmanagement-routing-autoritaet/screens/en/matrix.png)
+
+## The engine: candidates, not points
+
+The core is deliberately boring. No contest for the highest score, but a filter over the capability matrix — an endpoint is a candidate or it is not:
+
+- wrong model or wrong task type → not a candidate
+- endpoint disabled → not a candidate
+- profile has no permission for this endpoint → not a candidate
+- requested context longer than the row allows → not a candidate
+- endpoint known to be down → not a candidate
+
+The task type in that list is where the 404 from the third section becomes **structurally impossible**: a chat request never sees reranking rows.
+
+Selection among the real candidates is then trivial and deterministic: preference rank ascending, healthy before degraded, then most free slots.
+
+What matters in operation is not the selection but its **reason**: every reservation records *why* this endpoint was chosen — first choice, first choice was full, a pin overrode the rank, a model was taken from a guest. A distribution anomaly can be explained with a single query instead of guessed at.
+
+![Audit trail: per reservation the time, profile, caller, model, endpoint, routing reason and duration](/blog/llm-lastmanagement-routing-autoritaet/screens/en/audit.png)
+
+**Reserve atomically.** The whole cycle — build candidates, count, select, register the slot — runs under one lock. If everything is occupied, the caller waits on a condition variable that is woken on release, with periodic re-evaluation because the registry may have changed meanwhile. The slot-counting leak is no longer a tuning problem; it is gone.
+
+## The complete call specification
+
+The engine does not return "which endpoint" but the **complete specification of the call**: base URL, interface format, task type, the model name valid for this endpoint, the context length to send, the headers. The caller builds its HTTP call from that and makes **no** routing decision itself.
+
+That retires the entire fault class "body does not match endpoint" — not handled, but structurally excluded. The earlier plaster could go.
+
+One detail the GPU node operators had asked for: a header carrying the requesting profile. At the backend it is now possible to see *who* is occupying the card. Previously every request was anonymously the same client.
+
+Context length received a clear authority rule, and it is asymmetric: **enforced outwards**, so no client can provoke a model reload with an inflated value; **capped inwards**, so an internal plan may deliberately request less, but never more than the matrix permits.
+
+## Preemption: model slots, not aborted requests
+
+Some engines have a second, subtler limit: not only how many requests run in parallel, but **how many different models may be loaded at once**.
+
+If a request needs a new model on a node whose model slots are taken, the engine looks for a victim: an active slot of strictly lower priority that is the **sole user of its model**. If several share the same model, unloading would achieve nothing.
+
+The most important part is the negative case. **If no victim is found, the endpoint simply drops out of the candidates for this round.** No error, no thrashing — the next candidate is evaluated. That is the difference between a system that degrades under pressure and one that oscillates.
+
+And for expectations: preemption aborts **no running requests**. A stream runs to completion. What is displaced is only the right to start next.
+
+## Finding capacity by itself
+
+The ceilings used to be set by hand and drifted after every hardware change. After a power cut the cluster came back smaller than before — and nobody noticed, except through a rising rate of rejected requests.
+
+The polling service runs **outside the payload queue**, which was the lesson from the flapping health probe, and it asks in a type-aware way: Prometheus metrics from one engine, the list of loaded models from another, a light reachability check for the rest where a 4xx means "alive" and only 5xx and timeouts mean "down".
+
+Two rules proved essential:
+
+**Detection may only correct downwards.** The reported value is a second source, never an enlargement. A node that misjudges itself cannot overbook the cluster.
+
+**Announced endpoints are never adopted automatically.** If an unknown endpoint appears in a report, there is a warning and a suggestion for the UI — not an entry. A foreign node should not be able to write itself into the routing.
+
+The first detection run promptly produced a finding nobody had before: two endpoints configured with four slots reported **one**. The configured value had been fiction for weeks.
+
+On top of that sits a small control loop: the guest profile's quota automatically follows the sum of healthy, permitted slots — with a floor and two ticks of hysteresis, so a single failed probe does not make the limit jitter. Previously this was a negotiation by document between several parties.
+
+## The cutover: shadow mode and a switch in the database
+
+This is a production machine. A big-bang switch was not an option.
+
+The actual lever is a single configuration key with three consumer groups and three possible values each: old, shadow, new. The configuration is cached for 15 seconds — so an UPDATE takes effect within 15 seconds at the latest, **without a restart**. The rollback is the same UPDATE in reverse.
+
+### The shadow
+
+The most interesting step. In shadow mode the old system still decides and still acts — but every real reservation is **re-decided dry** by the new engine afterwards, and both answers are logged for comparison. No slot is occupied, no latency is added: evaluation happens in memory, writes are batched.
+
+To keep the comparison cheap, "did old and new decide the same?" is not application logic but a generated column in the table. An index scan instead of an evaluation.
+
+After nearly **15,000 comparisons** — four hours of the external batch at full load plus a complete production run — there was a number that hurt at first: **80 % divergence.**
+
+The resolution: every single divergence class was "the new one is right".
+
+| Class | What happened | Assessment |
+|---|---|---|
+| Overflow | Old placed beyond the real slots; new holds hard ceilings and diverts | new is right |
+| Would have waited | At total saturation old placed anyway — the counting leak, observed live | new is right |
+| Double occupancy | Old put two production models on a single-slot endpoint **while a guest job was running there** | new is right |
+| First choice skipped | The preferred endpoint was considered down by the old health check | correct |
+
+The third case is the moment the shadow mode paid for itself: a problem previously only described in theory was documented **live as it happened** — without anyone having to intervene.
+
+A side finding from the burn-in: the new engine's evaluation time was **103 microseconds** at the 95th percentile, with zero exceptions.
+
+### Switching one group at a time
+
+Three consumer groups, three separate cutovers, each with its own verification step.
+
+The **external interface** first — that is where risk is most controllable and benefit greatest. Verification in a ten-minute window: 321 requests, distribution as expected, zero errors, zero of the feared 404s. The old system drained exactly 16 seconds after the flip — the lifetime of the configuration cache.
+
+Then the **internal consumers**, meaning production. The trick that made this cheap: the slot context data structure stayed **byte-compatible**. Ten internal call sites were not touched; their client identifiers are mapped onto profiles by pattern match. Zero code change at the callers, full visibility by profile.
+
+Last, a neighbouring host that reserves through the interface. That closed the final gap for double occupancy.
+
+For the transition there was a **bridge**: while the old system still held slots in parallel, the new engine counted its active slots too. The slot sets were disjoint, so the sum was the true occupancy. Without that bridge the new engine would have double-booked the same GPUs while production was working on them.
+
+And an interim state that has to be documented honestly: there was a window in which the *reverse* bridge was missing — the old system did not see the new slots. That matched the behaviour from before exactly, so it was no regression, but no improvement either. The emergency lever for it was to withdraw the guest profile's permission for the affected endpoints. Effect: 15 seconds.
+
+## The UI: make the levers visible
+
+The whole rebuild would be worth half as much if control lived in SQL again. So there is a page with five areas.
+
+**Live** — which consumer group runs on which system, the cutover state at a glance. Plus guest quota target versus actual, all active slots with profile, model, endpoint and age on a five-second poll, and endpoint health with an on-off switch.
+
+**Matrix** — the capability matrix. Per row: endpoint, model, context length, configured versus **detected** slots with a marker on divergence, preference rank with arrow buttons, slots editable inline. This is the page that used to require a deployment.
+
+**Profiles** — priorities, quotas, endpoint permissions and the mapping rules. The latter deliberately read-only: who lets which internal service where is not something you change in passing.
+
+**Configuration** — every key with inline editing, change history and a **rollback button**. Every change carries a reason. The cutover itself is an entry here.
+
+**Audit** — the most recent reservations with profile, endpoint, model, routing reason and duration. Six fields, and you know what happened.
+
+Deliberately **not** built: creating new endpoints and one-click adoption of announced endpoints. Both stay in SQL. For actions that extend the topology, a little friction is a feature, not a shortcoming.
+
+## Three findings from operation afterwards
+
+**The bottleneck was the database, not the GPU.** When the external batch ran with 16 parallel workers, the symptom was "no request finishes any more". Obvious suspicion: GPU overloaded. In fact it was the connection pool: the reservation wrote its audit entry in the same call and could not get a connection, because the pool was small and shared with the whole application. Stalls reaching into the half-minute range — **before** the actual model call. The database itself had plenty of headroom: roughly a quarter of the connections in use. Purely client-side.
+
+**A small card beat the large machine.** For embeddings, a measurement showed that a small service on an older card managed roughly **four times more tokens per second** than the large node on short embedding requests. There the embedding service shares memory bandwidth with two chat instances and gets a single slot. Switching the primary route was a rank swap — *almost*. Three layers had to fall before the change took effect: the rank in the new matrix, a pin list in the caller's code, and an entry in the old registry that the health check still consulted. The new endpoint was missing there, was therefore considered down, and sank to the end of the list. A lesson about dual registries: until the clean-up phase is done, a new endpoint has to exist in *both* directories.
+
+**A wave of rejected requests while GPUs sat idle.** The cause was not overload but a request class that, through the context arithmetic, could only run on a *small subset* of the endpoints — a generously set output budget with small input reserves context that only one endpoint offers. That subset was permanently busy, and all the waiters held limiter slots. It became visible through a cross-tabulation of output class against routing reason. The fix was on the client side; the finding came from a database query.
+
+A later stage separated the admission budget **per task type**: chat and embeddings shared one, although they run on different pools — so an enrichment run could starve the embeddings.
+
+## What I take from it
+
+**Two decision layers are one layer too many.** Almost every hard fault came from two places answering the same question. The fix was not better synchronisation but deletion.
+
+**Capability is a filter, not a score.** A scoring system always finds a winner, even when none fits.
+
+**Configuration belongs in tables.** Not for elegance, but because hardware changes and a deployment to alter a preference has the wrong cost structure. Testing a rank change now takes 15 seconds, including the way back.
+
+**A switch in the database beats a feature branch.** Every cutover was reversible, without restart, without deployment — and the history is a row in a table.
+
+**The most expensive part of a distributed system is the time in which nobody knows why it just did that.** Which is why every audit row carries the routing reason. It is the row every diagnosis starts from, and the one measure from this rebuild I would build first in any comparable system.
+
+## Limitations
+
+- **One cluster, one workload, one observer.** The numbers hold for this setup. Whether 80 % divergence is typical or a special case of an unusually accreted legacy system, I cannot say.
+- **I assessed the divergence classes myself.** "The new one is right" is a judgement, not a measurement — even though it is justified per class.
+- **No A/B comparison of the end states.** What was measured is old against new in the decision, not throughput before against after over a comparable week.
+- **Preemption is tailored to engines with model slots.** For engines that hold one model permanently, the mechanism is unnecessary.
+- **The pattern suits small, heterogeneous clusters.** With homogeneous hardware at a scale where an established scheduler is a candidate, building your own would be the wrong answer.`,
+      faq: [
+        {
+          q: "How do you distribute load across several local LLM endpoints?",
+          a: "Through a single decision point that filters candidates by capability rather than scoring them: matching model, matching task type, permission for the requesting profile, sufficient context length, endpoint not down. Among the real candidates a configured preference rank decides, then the number of free slots. Two layers that are both allowed to decide reliably produce faults.",
+        },
+        {
+          q: "Why is a scoring system problematic for LLM routing?",
+          a: "Because it always finds a winner — even when no endpoint can serve the request. In the observed case one endpoint received 100 bonus points for happening to spell the model name the same way as the calling client, and thereby pulled all load onto a single slot. The question «can this endpoint do it at all» belongs before the evaluation, not as a weight inside it.",
+        },
+        {
+          q: "What is a shadow mode in a routing migration?",
+          a: "The old system keeps deciding and keeps acting, the new one decides in parallel without effect, and both answers are logged for comparison. No slot is occupied and no latency is added. Here several thousand comparisons produced divergence in well over half the cases — and every divergence class favoured the new system, including a double occupancy that had previously only been described in theory.",
+        },
+        {
+          q: "How do you bound an external guest user without throttling production?",
+          a: "Through profiles with priority and a permission matrix of profile × endpoint, plus a quota that automatically follows the sum of healthy permitted slots. Preemption applies only against strictly lower priority and only to models no other slot shares. If no victim is found, the endpoint drops out of the candidates instead of producing an error.",
+        },
+        {
+          q: "Why should a health probe run outside the normal queue?",
+          a: "Because a meaningful probe has to be a real miniature call — a plain status endpoint reports success even when the inference engine is dead. If that call sits in the same queue as the payload, it runs into the timeout on a saturated endpoint, and the endpoint is marked down when it is merely busy. That produces flapping between healthy and down.",
+        },
+        {
+          q: "Should LLM endpoint capacity be configured or detected?",
+          a: "Both, with clear precedence: configure as the ceiling, detect as a downward correction. The detected value must never enlarge, otherwise a node that misjudges itself can overbook the cluster. In the observed case two endpoints reported one real slot where four were configured — the value had been fiction for weeks and only surfaced through a rising rejection rate.",
+        },
+        {
+          q: "How do you switch routing in production without downtime?",
+          a: "With a configuration switch per consumer group and three values: old, shadow, new. If the configuration is cached only briefly, an UPDATE takes effect within seconds and the rollback is the same UPDATE in reverse — no restart, no deployment. While both systems hold slots in parallel you need a bridge that counts the other's occupancy, otherwise the same GPU gets booked twice.",
+        },
+      ],
+      sources: [
+        {
+          title: "PostgreSQL — generated columns (basis of the divergence evaluation)",
+          url: "https://www.postgresql.org/docs/current/ddl-generated-columns.html",
+        },
+        {
+          title: "Python asyncio — locks and conditions for atomic reservation",
+          url: "https://docs.python.org/3/library/asyncio-sync.html",
+        },
+        {
+          title: "llama.cpp server — slots and Prometheus metrics",
+          url: "https://github.com/ggml-org/llama.cpp/tree/master/tools/server",
+        },
+        {
+          title: "Ollama API — loaded models and keep_alive",
+          url: "https://github.com/ollama/ollama/blob/main/docs/api.md",
+        },
+        {
+          title: "SQLAlchemy — connection pooling and pool limits",
+          url: "https://docs.sqlalchemy.org/en/20/core/pooling.html",
+        },
+        {
+          title: "Google SRE Book — handling overload",
+          url: "https://sre.google/sre-book/handling-overload/",
+        },
+      ],
+    },
+  },
+  {
     slug: "ollama-stallwatch-gpu-hang-erkennung",
     date: "2026-07-31",
     updated: "2026-07-31",
@@ -1004,10 +1632,17 @@ One more observation that is not about the models. While preparing the underlyin
   },
 ];
 
+/**
+ * Drafts are excluded from the build by default. `INCLUDE_DRAFTS=1` pulls them in
+ * for a local preview build — see `npm run preview` — which also stamps a marker
+ * into out/ so the deploy script refuses to upload such a build.
+ */
+const INCLUDE_DRAFTS = process.env.INCLUDE_DRAFTS === "1";
+
 /** Posts that are actually published, newest first. */
 export function getAllPosts() {
   return posts
-    .filter((post) => !post.draft)
+    .filter((post) => INCLUDE_DRAFTS || !post.draft)
     .slice()
     .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
@@ -1027,6 +1662,7 @@ export function localizePost(post, lang) {
   return {
     slug: post.slug,
     lang,
+    draft: Boolean(post.draft),
     date: post.date,
     updated: post.updated || post.date,
     author: post.author || "Michael Schiffer",

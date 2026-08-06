@@ -7,12 +7,15 @@
     "dev": "next dev",
     "prebuild": "node scripts/generate-llms-txt.mjs",
     "build": "next build",
+    "preview": "INCLUDE_DRAFTS=1 npm run build && touch out/DRAFTS-INCLUDED && echo \"Vorschau-Build inkl. Entwuerfe — Deploy ist blockiert.\"",
     "start": "next start",
     "lint": "eslint .",
     "blog:assets": "node scripts/blog-assets.mjs",
+    "blog:figure": "node scripts/blog-figure.mjs",
     "blog:check": "node scripts/blog-check.mjs",
     "blog:preview": "node scripts/blog-social-preview.mjs",
-    "blog:verify": "npm run build && node scripts/blog-check.mjs --built"
+    "blog:verify": "npm run build && node scripts/blog-check.mjs --built",
+    "blog:export": "node scripts/blog-export.mjs"
   },
   "dependencies": {
     "idb": "^8.0.3",

@@ -256,15 +256,44 @@ function checkLanguageBlock(slug, lang, post) {
  * enters the picture — this is the only automatic backstop.
  */
 const LEAK_PATTERNS = [
+  // Ticket-, Host- und Pfadkennungen
   [/\bfA-\d+\b/, "internal ticket id"],
+  [/\bDIW-\d+\b/, "internal ticket id"],
+  [/\bMig\s*\d+\b/, "internal migration number"],
   [/\bgx10-\d+\b/i, "internal hostname"],
+  [/\bti-?(?:nas-)?\d{2}\b/i, "internal hostname"],
   [/~\/gx10-test\b/, "internal path"],
+
+  // Marken und Auftraggeber
   [/\bThe Implementers\b/i, "sister company name"],
   [/\bimplementers\.de\b/i, "sister company domain"],
+  [/\bDIWA\b/, "project name of the client engagement"],
+  [/\bDICON\b/i, "client name"],
   [/\bschraml\b/i, "client name"],
   [/\bzander\b/i, "client name"],
   [/\bmolling\b/i, "client name"],
   [/\bC3[A-Z0-9]{4,}\b/, "customer program name"],
+
+  // Fingerabdruck des Endkunden-Systems. Freigegebene Ersatzformulierungen:
+  // "Legacy-ERP-System" und "anwendungseigene Zugriffsschicht".
+  [/\bWarenwirtschaftssystem\b/i, "end-customer fingerprint"],
+  [/\bInformix\b/i, "end-customer fingerprint"],
+  [/\bAIX\b/, "end-customer fingerprint"],
+  [/hausinterner Wrapper/i, "end-customer fingerprint"],
+
+  // Interne Werkzeugnamen
+  [/\bPromptLab\b/i, "internal tool name"],
+  [/\bcobol-bench\b/i, "internal tool name"],
+  [/\bflowlib\b/i, "internal tool name"],
+  [/\bflows-api\b/i, "internal tool name"],
+  [/\bhours-cadence\b/i, "internal tool name"],
+  [/\bday_activity\b/i, "internal tool name"],
+  [/\blastmgmt\b/i, "project-specific schema name"],
+
+  // Board-Werkzeuge des Auftraggebers. Bewusst gross-/kleinschreibungssensitiv:
+  // "lineare Attention" ist ein Fachbegriff und darf nicht anschlagen.
+  [/\bFavro\b/i, "client board tool — write \"externes Ticketing\""],
+  [/\bLinear\b/, "client board tool — write \"externes Ticketing\""],
 ];
 
 function checkLeaks(where, text) {
@@ -281,15 +310,16 @@ async function main() {
     path.join(ROOT, "src/content/blog/posts.js")
   );
 
-  const drafts = posts.filter((p) => p.draft);
-  const published = getAllPosts().filter((p) => (args.slug && args.slug !== true ? p.slug === args.slug : true));
+  const bySlug = (p) => (args.slug && args.slug !== true ? p.slug === args.slug : true);
+  const drafts = posts.filter((p) => p.draft).filter(bySlug);
+  const published = getAllPosts().filter(bySlug);
 
   if (args.slug && args.slug !== true && published.length === 0) {
     console.error(`✗ No published post with slug "${args.slug}".`);
     process.exit(1);
   }
 
-  if (published.length === 0) {
+  if (published.length === 0 && drafts.length === 0) {
     fail("posts.js", "no published posts — the static export needs at least one");
   }
 
@@ -365,6 +395,28 @@ async function main() {
           }
         }
       }
+      // Belt and braces: scan what actually ships. The field-by-field checks above
+      // only cover fields this script knows about — a name could enter through a
+      // hardcoded string in a component, a generated file or a field added later.
+      // Whatever ends up in out/ goes public, so that is what gets scanned.
+      const shipped = [];
+      const walk = (dir) => {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+          const full = path.join(dir, entry.name);
+          // _next holds minified bundles: no prose, but plenty of false positives.
+          if (entry.isDirectory()) {
+            if (entry.name !== "_next") walk(full);
+          } else if (/\.(html|txt|xml)$/.test(entry.name)) {
+            shipped.push(full);
+          }
+        }
+      };
+      walk(outDir);
+      for (const file of shipped) {
+        checkLeaks(`out/${path.relative(outDir, file)}`, fs.readFileSync(file, "utf8"));
+      }
+      console.log(`  scanned ${shipped.length} shipped file(s) for leak patterns`);
+
       if (!fs.existsSync(path.join(outDir, "robots.txt"))) fail("out/", "robots.txt missing");
       const llms = path.join(outDir, "llms.txt");
       if (!fs.existsSync(llms)) {
@@ -383,7 +435,30 @@ async function main() {
     }
   }
 
-  console.log(`Checked ${published.length} published post(s)${drafts.length ? `, ${drafts.length} draft(s) skipped` : ""}.`);
+  for (const post of drafts) {
+    const where = `${post.slug} (draft)`;
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(post.slug)) fail(where, "slug must be lowercase kebab-case");
+    for (const lang of LANGS) {
+      const localized = localizePost(post, lang);
+      if (!localized) {
+        warn(where, `no "${lang}" block yet`);
+        continue;
+      }
+      // Gleiche Inhalts- und Namensregeln wie bei veroeffentlichten Posts —
+      // ein Entwurf, der erst beim Publizieren geprueft wird, wird zu spaet geprueft.
+      checkLanguageBlock(`${post.slug} (draft)`, lang, localized);
+      const dir = path.join(ROOT, "public", "blog", post.slug, lang);
+      if (!fs.existsSync(dir)) warn(where, `no images for "${lang}" yet`);
+    }
+    if (!fs.existsSync(path.join(ROOT, "blog-drafts", post.slug, "social"))) {
+      warn(where, "no social copy yet");
+    }
+  }
+
+  console.log(
+    `Checked ${published.length} published post(s)` +
+      (drafts.length ? ` and ${drafts.length} draft(s)` : "") + "."
+  );
   for (const warning of warnings) console.log(`  ! ${warning}`);
   for (const error of errors) console.log(`  ✗ ${error}`);
 

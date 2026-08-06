@@ -76,6 +76,12 @@ export default async function BlogPostPage({ params }) {
         dangerouslySetInnerHTML={{ __html: buildBlogPostingJsonLd(post) }}
       />
 
+      {post.draft ? (
+        <p className="mb-6 rounded-lg border-2 border-primary bg-primary/10 px-4 py-3 font-body text-sm font-semibold text-primary-deep">
+          Entwurf — nur in einer lokalen Vorschau sichtbar, nicht veröffentlicht.
+        </p>
+      ) : null}
+
       <nav className="font-body text-sm text-ink-muted">
         <Link href={`/${lang}/blog/`} className="font-medium text-primary hover:text-primary-deep">
           &larr; {tr.blog.title}
