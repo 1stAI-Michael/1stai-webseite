@@ -32,7 +32,34 @@ check_no_drafts() {
   fi
 }
 
+# fA-339: the leak gate hangs on the script, not on the habit. blog-check.mjs
+# holds the LEAK_PATTERNS list (client names, sister brand, internal hostnames,
+# ticket ids, end-customer fingerprint). It used to be a separate npm script a
+# human had to remember; publishing is irreversible, so remembering is not a
+# control. Same before/after shape as the drafts marker, for the same reason:
+#   before the build — source level, fails in a second instead of after a build
+#   after the build  — --built scans what is ACTUALLY in out/ and goes up. Leaks
+#                      that never appear in posts.js land there: hardcoded
+#                      strings in components, generated llms.txt, sitemap.
+# Only the second run is the real guard; the first one just saves time.
+check_no_leaks() {  # $1: optional "--built"
+  echo "Leak gate: blog-check ${1:-(source)} ..."
+  if node scripts/blog-check.mjs ${1:-}; then
+    return 0
+  fi
+  echo ""
+  echo "Leak gate FAILED — nothing was uploaded (fA-339)."
+  echo "Fix the findings above, or extend LEAK_PATTERNS if a new name is legitimate."
+  exit 1
+}
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "node is required — the leak gate cannot run, so this deploy stops (fA-339)."
+  exit 1
+fi
+
 check_no_drafts
+check_no_leaks
 
 if [ "${SKIP_BUILD:-0}" = "1" ]; then
   echo "SKIP_BUILD=1 — using existing out/ ..."
@@ -48,6 +75,7 @@ fi
 
 # Again after the build — covers SKIP_BUILD=1, where out/ is whatever was there.
 check_no_drafts
+check_no_leaks --built
 
 
 if ! command -v sshpass >/dev/null 2>&1; then
