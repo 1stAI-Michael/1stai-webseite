@@ -15,3 +15,8 @@ blog-inbox/*
 !blog-inbox/*/
 blog-inbox/*/*
 !blog-inbox/*/prompts.md
+
+# Die Namensliste des Leck-Gates. Eine Aufstellung dessen, was nicht nach
+# draussen soll, ist selbst etwas, das nicht nach draussen soll. Die Vorlage
+# scripts/leak-patterns.example.json bleibt im Repo, die gefuellte Datei nicht.
+scripts/leak-patterns.json

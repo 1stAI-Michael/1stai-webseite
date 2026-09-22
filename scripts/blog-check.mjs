@@ -286,46 +286,82 @@ function checkLanguageBlock(slug, lang, post) {
  * no internal identifiers. Extend LEAK_PATTERNS when a new client or system
  * enters the picture — this is the only automatic backstop.
  */
-const LEAK_PATTERNS = [
-  // Ticket-, Host- und Pfadkennungen
+// Shapes stay here, names do not. Anything that spells out a client, a brand or a
+// host lives in scripts/leak-patterns.json, which .gitignore keeps out of the public
+// repo — a list of everything that must not go out is itself a thing that must not
+// go out. The two rules below name nobody, so they can stay in plain sight.
+const SHAPE_PATTERNS = [
   [/\bfA-\d+\b/, "internal ticket id"],
-  [/\bDIW-\d+\b/, "internal ticket id"],
   [/\bMig\s*\d+\b/, "internal migration number"],
-  [/\bgx10-\d+\b/i, "internal hostname"],
-  [/\bti-?(?:nas-)?\d{2}\b/i, "internal hostname"],
-  [/~\/gx10-test\b/, "internal path"],
-
-  // Marken und Auftraggeber
-  [/\bThe Implementers\b/i, "sister company name"],
-  [/\bimplementers\.de\b/i, "sister company domain"],
-  [/\bDIWA\b/, "project name of the client engagement"],
-  [/\bDICON\b/i, "client name"],
-  [/\bschraml\b/i, "client name"],
-  [/\bzander\b/i, "client name"],
-  [/\bmolling\b/i, "client name"],
-  [/\bC3[A-Z0-9]{4,}\b/, "customer program name"],
-
-  // Fingerabdruck des Endkunden-Systems. Freigegebene Ersatzformulierungen:
-  // "Legacy-ERP-System" und "anwendungseigene Zugriffsschicht".
-  [/\bWarenwirtschaftssystem\b/i, "end-customer fingerprint"],
-  [/\bInformix\b/i, "end-customer fingerprint"],
-  [/\bAIX\b/, "end-customer fingerprint"],
-  [/hausinterner Wrapper/i, "end-customer fingerprint"],
-
-  // Interne Werkzeugnamen
-  [/\bPromptLab\b/i, "internal tool name"],
-  [/\bcobol-bench\b/i, "internal tool name"],
-  [/\bflowlib\b/i, "internal tool name"],
-  [/\bflows-api\b/i, "internal tool name"],
-  [/\bhours-cadence\b/i, "internal tool name"],
-  [/\bday_activity\b/i, "internal tool name"],
-  [/\blastmgmt\b/i, "project-specific schema name"],
-
-  // Board-Werkzeuge des Auftraggebers. Bewusst gross-/kleinschreibungssensitiv:
-  // "lineare Attention" ist ein Fachbegriff und darf nicht anschlagen.
-  [/\bFavro\b/i, "client board tool — write \"externes Ticketing\""],
-  [/\bLinear\b/, "client board tool — write \"externes Ticketing\""],
 ];
+
+const PATTERN_FILE = path.join(ROOT, "scripts", "leak-patterns.json");
+
+/**
+ * Load the named patterns, or stop. Never degrade to "no patterns": a gate that
+ * waves everything through looks exactly like a gate that found nothing, and this
+ * one runs inside the deploy. Missing file, bad JSON and an empty list are all
+ * hard failures, and the loaded count is printed so a list that quietly shrank is
+ * visible rather than merely absent.
+ */
+function loadNamedPatterns() {
+  let raw;
+  try {
+    raw = fs.readFileSync(PATTERN_FILE, "utf8");
+  } catch (error) {
+    console.error(
+      `\u2717 Leak pattern list missing: ${path.relative(ROOT, PATTERN_FILE)}\n` +
+        `  It is deliberately not in the repository. Copy it from another machine\n` +
+        `  (or from scripts/leak-patterns.example.json and fill it in) before publishing.\n` +
+        `  Reason: ${error.code || error.message}`
+    );
+    process.exit(1);
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    console.error(`\u2717 ${path.relative(ROOT, PATTERN_FILE)} is not valid JSON: ${error.message}`);
+    process.exit(1);
+  }
+
+  const entries = parsed?.muster;
+  if (!Array.isArray(entries) || entries.length === 0) {
+    console.error(`\u2717 ${path.relative(ROOT, PATTERN_FILE)} holds no patterns under "muster".`);
+    process.exit(1);
+  }
+
+  return entries.map((entry, index) => {
+    const where = `${path.relative(ROOT, PATTERN_FILE)} entry ${index + 1}`;
+    if (!entry || typeof entry.label !== "string") {
+      console.error(`\u2717 ${where}: missing "label".`);
+      process.exit(1);
+    }
+    const flags = entry.genau ? "" : "i";
+    if (typeof entry.regex === "string") {
+      try {
+        return [new RegExp(entry.regex, flags), entry.label];
+      } catch (error) {
+        console.error(`\u2717 ${where}: bad regex — ${error.message}`);
+        process.exit(1);
+      }
+    }
+    if (typeof entry.wort === "string" && entry.wort.length > 0) {
+      const escaped = entry.wort.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return [new RegExp(`\\b${escaped}\\b`, flags), entry.label];
+    }
+    console.error(`\u2717 ${where}: needs either "wort" or "regex".`);
+    process.exit(1);
+  });
+}
+
+const NAMED_PATTERNS = loadNamedPatterns();
+const LEAK_PATTERNS = [...SHAPE_PATTERNS, ...NAMED_PATTERNS];
+console.log(
+  `leak patterns: ${SHAPE_PATTERNS.length} shapes + ${NAMED_PATTERNS.length} names ` +
+    `from ${path.relative(ROOT, PATTERN_FILE)}`
+);
 
 function checkLeaks(where, text) {
   for (const [pattern, label] of LEAK_PATTERNS) {

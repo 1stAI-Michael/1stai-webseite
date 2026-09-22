@@ -72,10 +72,26 @@ Regeln, die der Check erzwingt:
   auf, ein Kartenmodell nicht. Sie machen den Text glaubwürdiger und
   nachrechenbar (Speichergröße, Bandbreite) — also nutzen.
 - keine internen Kennungen und keine Fremdnamen — der Check prüft Titel,
-  Excerpt, Body, FAQ, Alt-Texte, Tags **und** die Social-Texte gegen
-  `LEAK_PATTERNS` in `scripts/blog-check.mjs`: Ticket-IDs, Hostnamen, interne
-  Pfade, Schwestermarke, Kundennamen, Kunden-Programmnamen. Neue Kunden dort
-  ergänzen — das ist der einzige automatische Rückhalt
+  Excerpt, Body, FAQ, Alt-Texte, Tags **und** die Social-Texte: Ticket-IDs,
+  Hostnamen, interne Pfade, Schwestermarke, Kundennamen, Kunden-Programmnamen.
+  Neue Kunden ergänzen — das ist der einzige automatische Rückhalt.
+
+  **Die Muster liegen seit dem 22.09.2026 zweigeteilt** (Michael-Entscheid):
+  Formen ohne Namen (Ticketnummern, Migrationsnummern) stehen als
+  `SHAPE_PATTERNS` in `scripts/blog-check.mjs`. Alles mit einem Namen darin —
+  Kunden, Schwestermarke, Hosts, interne Werkzeuge — steht in
+  `scripts/leak-patterns.json`, und die Datei ist **gitignored**. Der Grund ist
+  unangenehm einfach: Eine Aufstellung dessen, was nicht nach draußen soll, ist
+  selbst etwas, das nicht nach draußen soll, und sie stand vorher im
+  öffentlichen Repo.
+
+  **Fehlt die Datei, bricht der Check ab** (Exit 1) und der Deploy lädt nichts
+  hoch — nicht als Warnung, sondern als Fehler. Ein Gate, das ohne seine Liste
+  durchwinkt, sähe im Fehlerfall aus wie ein bestandener Lauf. Auf einer neuen
+  Maschine wird die Datei **out-of-band** besorgt, nicht aus dem Gedächtnis neu
+  geschrieben; `scripts/leak-patterns.example.json` zeigt nur die Form. Jeder
+  Lauf druckt, wie viele Muster geladen wurden — eine still geschrumpfte Liste
+  soll sichtbar sein, nicht bloß abwesend
 
 `slug` ist für beide Sprachen identisch, lowercase-kebab-case, und steckt in der
 URL `/{de,en}/blog/<slug>/`. Bei englischsprachigen Slugs liest sich beides gut.

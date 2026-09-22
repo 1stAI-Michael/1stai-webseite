@@ -1,0 +1,34 @@
+{
+  "_liesmich": [
+    "Vorlage. Die echte Liste heisst scripts/leak-patterns.json und ist per",
+    ".gitignore aus dem Repository ausgenommen — eine Aufstellung dessen, was",
+    "nicht nach draussen soll, ist selbst etwas, das nicht nach draussen soll.",
+    "",
+    "Neue Maschine: die echte Datei out-of-band besorgen, nicht aus dem",
+    "Gedaechtnis neu schreiben. Eine Liste, die einen Namen vergisst, sieht im",
+    "Fehlerfall aus wie eine vollstaendige.",
+    "",
+    "Fehlt sie, bricht blog:check mit Exit 1 ab, und der Deploy laedt nichts",
+    "hoch. Das ist Absicht: ein Gate, das ohne seine Liste durchwinkt, waere",
+    "schlimmer als keines, weil es wie ein bestandener Lauf aussaehe.",
+    "",
+    "Formen ohne Namen (Ticketnummern, Migrationsnummern) stehen weiterhin als",
+    "SHAPE_PATTERNS in blog-check.mjs — sie verraten niemanden.",
+    "",
+    "Form je Eintrag:",
+    "  wort   literaler Name, wird als \\bwort\\b gesucht, Sonderzeichen maskiert",
+    "  regex  wenn Wortgrenzen nicht passen (Pfade, Wortgruppen, Formen)",
+    "  genau  true = Gross-/Kleinschreibung zaehlt (Vorgabe: zaehlt nicht)",
+    "  label  was in der Fehlermeldung steht; gern mit der erlaubten Ersatzformulierung"
+  ],
+  "muster": [
+    { "wort": "Beispielkunde GmbH", "label": "client name" },
+    { "wort": "beispielkunde.example", "label": "client domain" },
+    { "wort": "Projektkuerzel", "genau": true, "label": "project name of the client engagement" },
+    { "regex": "\\bPROJ-\\d+\\b", "label": "client ticket id" },
+    { "regex": "\\bhost-\\d+\\b", "label": "internal hostname" },
+    { "regex": "~/pfad-beispiel\\b", "label": "internal path" },
+    { "wort": "Beispielprodukt", "label": "end-customer fingerprint — write \"Legacy-ERP-System\"" },
+    { "wort": "beispielwerkzeug", "label": "internal tool name" }
+  ]
+}
