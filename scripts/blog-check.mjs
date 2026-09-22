@@ -13,6 +13,7 @@
  */
 
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -358,9 +359,26 @@ function loadNamedPatterns() {
 
 const NAMED_PATTERNS = loadNamedPatterns();
 const LEAK_PATTERNS = [...SHAPE_PATTERNS, ...NAMED_PATTERNS];
+
+/**
+ * Print what the gate is actually holding, not just that it holds something.
+ * Once the list comes from a clone, a failed pull leaves yesterday's copy behind
+ * and the run stays green — a missing file we catch, a stale one we cannot. The
+ * fingerprint is what makes that visible: identical log lines across builds mean
+ * the list did not move. The date is the file's own mtime and says when this
+ * machine last wrote it, not when someone last edited the content; after a clone
+ * those differ, so it is labelled for what it is rather than dressed up as more.
+ */
+function describePatternFile() {
+  const bytes = fs.readFileSync(PATTERN_FILE);
+  const digest = crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 8);
+  const touched = fs.statSync(PATTERN_FILE).mtime.toISOString().slice(0, 10);
+  return `${digest} (file written ${touched})`;
+}
+
 console.log(
   `leak patterns: ${SHAPE_PATTERNS.length} shapes + ${NAMED_PATTERNS.length} names ` +
-    `from ${path.relative(ROOT, PATTERN_FILE)}`
+    `from ${path.relative(ROOT, PATTERN_FILE)} \u2014 ${describePatternFile()}`
 );
 
 function checkLeaks(where, text) {

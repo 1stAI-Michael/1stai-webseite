@@ -87,11 +87,28 @@ Regeln, die der Check erzwingt:
 
   **Fehlt die Datei, bricht der Check ab** (Exit 1) und der Deploy lädt nichts
   hoch — nicht als Warnung, sondern als Fehler. Ein Gate, das ohne seine Liste
-  durchwinkt, sähe im Fehlerfall aus wie ein bestandener Lauf. Auf einer neuen
-  Maschine wird die Datei **out-of-band** besorgt, nicht aus dem Gedächtnis neu
-  geschrieben; `scripts/leak-patterns.example.json` zeigt nur die Form. Jeder
-  Lauf druckt, wie viele Muster geladen wurden — eine still geschrumpfte Liste
-  soll sichtbar sein, nicht bloß abwesend
+  durchwinkt, sähe im Fehlerfall aus wie ein bestandener Lauf.
+
+  **Auf einer neuen Maschine wird die Datei besorgt, nicht neu geschrieben.**
+  Sie liegt in einem privaten Repo auf der internen Forge; Zugang über den
+  Broker. Die konkrete Adresse steht bewusst **nicht hier** — diese Datei ist
+  Teil des öffentlichen Repos, und ein interner Hostname darin wäre derselbe
+  Fehler eine Etage tiefer. Wer die Bezugsquelle sucht, findet sie auf dem Board
+  unter dem Ticket *„Forgejo: privates Repo fuer Leck-Muster und
+  Blog-Arbeitsmaterial"*. Der Umweg über das Board ist Absicht: Die Anleitung
+  zum Beschaffen des Repos darf nicht im Repo liegen.
+  `scripts/leak-patterns.example.json` zeigt nur die Form, nie den Inhalt.
+
+  **Jeder Lauf druckt Anzahl und Fingerabdruck der Liste**, etwa
+  `2 shapes + 25 names … — 0b8e763e (file written 2026-09-22)`. Der Grund ist
+  der Fall, den der Abbruch oben *nicht* fängt: Sobald die Liste aus einem Klon
+  kommt, lässt ein fehlgeschlagener `pull` die alte Kopie liegen und der Lauf
+  bleibt grün. Eine fehlende Datei merkt man, eine veraltete nicht. Bleibt die
+  Zeile über mehrere Baue identisch, hat sich die Liste nicht bewegt. Das Datum
+  ist die mtime und heißt deshalb „file written": Nach einem Klon sagt sie, wann
+  diese Maschine geschrieben hat, nicht wann jemand den Inhalt zuletzt geändert
+  hat — eine Zahl, die etwas anderes behauptet, als sie misst, ist schlimmer als
+  keine
 
 `slug` ist für beide Sprachen identisch, lowercase-kebab-case, und steckt in der
 URL `/{de,en}/blog/<slug>/`. Bei englischsprachigen Slugs liest sich beides gut.
