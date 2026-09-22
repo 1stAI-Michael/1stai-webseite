@@ -25,6 +25,20 @@ Alles, was man sonst vergessen könnte, prüft `npm run blog:check`.
 `blog-inbox/` und `blog-drafts/` sind Arbeitsmaterial und werden bewusst **nicht**
 hochgeladen — `scripts/deploy-webspace.sh` lädt nur `out/`.
 
+**`blog-drafts/` und `scripts/leak-patterns.json` sind seit dem 22.09.2026 keine
+Dateien hier, sondern Verweise** in ein privates Repo auf der internen Forge (siehe
+Schritt 1, Bezugsquelle über das Board). Absicht: Eine Kopie kann veralten, ohne dass
+irgendetwas scheitert — der Check liefe grün gegen eine Liste von vorgestern. Ein
+Verweis kann das nicht, es gibt nur einen Stand.
+
+Zwei Dinge daran sind leicht zu übersehen. **Der `.gitignore`-Eintrag für
+`blog-drafts` steht ohne Schrägstrich**: Mit Schrägstrich greift er nur auf
+Verzeichnisse, und für git ist ein Verweis eine Datei — gemessen, der Verweis wäre
+sonst committet worden. Und **ein Verweis ins Leere fällt nicht von selbst auf**:
+`ln -sfn` legt ihn auch ohne Ziel an, ohne Fehler. Geprüft wird mit `readlink -f`,
+nie mit dem Exit-Code. Zeigt er ins Leere, bricht `blog:check` ab (Exit 1) — das ist
+der Rückhalt, aber nicht die Prüfung.
+
 ## Schritt 1 — Entwurf DE
 
 Eintrag am **Anfang** des `posts`-Arrays in `src/content/blog/posts.js`, zunächst

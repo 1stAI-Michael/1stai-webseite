@@ -10,7 +10,10 @@ out/
 # blog-drafts/ enthaelt die Themenliste mit Kundenkontext und noch nicht
 # veroeffentlichte Social-Texte, blog-inbox/ die Rohbilder. Die Bild-Prompts
 # bleiben drin, weil sie zur Reproduzierbarkeit eines Beitrags gehoeren.
-blog-drafts/
+# Ohne Schraegstrich mit Absicht: seit 22.09.2026 ist blog-drafts ein Verweis
+# ins Repo veroeffentlichungs-schutz, und fuer git ist ein Verweis eine Datei.
+# `blog-drafts/` haette nur das Verzeichnis gefangen und den Verweis committet.
+blog-drafts
 blog-inbox/*
 !blog-inbox/*/
 blog-inbox/*/*
