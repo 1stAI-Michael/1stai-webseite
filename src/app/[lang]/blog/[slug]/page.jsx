@@ -122,13 +122,25 @@ export default async function BlogPostPage({ params }) {
         </p>
       ) : null}
 
-      <img
-        src={post.coverImage}
-        alt={post.coverAlt}
-        width={1600}
-        height={900}
-        className="mt-8 w-full rounded-2xl border border-ink-subtle"
-      />
+      <figure className="mt-8">
+        <img
+          src={post.coverImage}
+          alt={post.coverAlt}
+          width={1600}
+          height={900}
+          className="w-full rounded-2xl border border-ink-subtle"
+        />
+        {/* Am Bild, nicht im Impressum: Wer das Bild sieht, soll lesen koennen,
+            woher es kommt. Der Hinweis ueber dem Text gilt nur dem Text. */}
+        {post.coverAiGenerated ? (
+          <figcaption
+            data-ai-generated-image="true"
+            className="mt-2 font-body text-xs text-ink-muted"
+          >
+            {tr.blog.imageAiNotice}
+          </figcaption>
+        ) : null}
+      </figure>
 
       <div className={PROSE} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
 

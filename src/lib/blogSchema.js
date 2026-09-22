@@ -29,6 +29,12 @@ function isoDate(date) {
 const AI_SOURCE_TYPE =
   "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia";
 
+/** Bildnachweis, wenn das Titelbild selbst erzeugt wurde. */
+const AI_IMAGE_CREDIT = {
+  de: "KI-generiertes Titelbild, erstellt nach einer Vorgabe zu diesem Beitrag.",
+  en: "AI-generated cover image, produced from a brief written for this article.",
+};
+
 const AI_DISCLOSURE = {
   de: (name) => `KI-generierter Text. Geprüft und freigegeben von ${name}, der dafür einsteht.`,
   en: (name) => `AI-generated text. Reviewed and approved by ${name}, who is answerable for it.`,
@@ -111,6 +117,15 @@ export function buildBlogPostingJsonLd(post) {
       url: absoluteUrl(post.ogImage),
       width: 1200,
       height: 627,
+      // Die Kennzeichnung am Artikel sagt nichts ueber das Bild. Ein Pruefer
+      // von aussen kann Erzeugnis und Stockfoto nicht unterscheiden, also
+      // steht es hier — dieselbe IPTC-Angabe wie beim Text.
+      ...(post.coverAiGenerated
+        ? {
+            digitalSourceType: AI_SOURCE_TYPE,
+            creditText: AI_IMAGE_CREDIT[lang] || AI_IMAGE_CREDIT.en,
+          }
+        : {}),
     },
     isPartOf: {
       "@type": "Blog",

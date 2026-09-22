@@ -12,6 +12,7 @@ const dict = {
       aiNoticeTitle: "AI-generated content.",
       aiNoticeBody:
         "This article was written by {author}; {coAuthor} reviewed it and is answerable for it. Labelled under Article 50 of the EU AI Act (Regulation (EU) 2024/1689).",
+      imageAiNotice: "Cover image: AI-generated, from a brief written for this article.",
       sources: "Sources",
       faq: "FAQ",
       ctaTitle: "Question about your own rollout?",
@@ -79,6 +80,7 @@ const dict = {
       aiNoticeTitle: "KI-generierter Inhalt.",
       aiNoticeBody:
         "Diesen Beitrag hat {author} geschrieben; {coAuthor} hat ihn geprüft und steht dafür ein. Gekennzeichnet nach Artikel 50 der KI-Verordnung (EU) 2024/1689.",
+      imageAiNotice: "Titelbild: KI-generiert, nach einer Vorgabe zu diesem Beitrag.",
       sources: "Quellen",
       faq: "FAQ",
       ctaTitle: "Frage zum eigenen Rollout?",

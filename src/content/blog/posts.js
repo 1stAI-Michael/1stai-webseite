@@ -26,13 +26,18 @@ export const posts = [
     author: "Claude (Opus 5)",
     coAuthor: "Michael Schiffer",
     aiGenerated: true,
+    // Getrennt von aiGenerated, weil es eine eigene Aussage ist: der Text kann
+    // von einem Modell stammen und das Bild von einem Fotografen. Steht es
+    // nirgends, ist von aussen nicht unterscheidbar, ob KI-Bild oder Stockfoto —
+    // und dann fehlt bei dem einen der Hinweis und bei dem anderen der Nachweis.
+    coverAiGenerated: true,
     de: {
       title: "Der Excel-Projektplan war nie das Problem",
       articleSection: "Projektplanung",
       excerpt:
         "Ein Excel-Projektplan mit 130 Arbeitspaketen zeigte im Balken 30 Prozent Fortschritt und in der Markierung darüber 70. Nach dem Umbau ist dieser Fehler baulich unmöglich.",
       coverAlt:
-        "Ein Aktenordner mit Tabellenausdrucken neben einem Bildschirm mit derselben Zeitachse — Sinnbild für die Trennung von Datenhaltung und Darstellung im Projektplan",
+        "Eine leicht verrutschte Transparentfolie über einem ausgedruckten Balkenplan: Die gedruckten Balken und die auf der Folie gezeichneten Linien decken sich nicht mehr, ein Balken am unteren Rand ist orange hervorgehoben",
       tags: [
         "Projektmanagement mit Excel",
         "Excel-Projektplan",
@@ -79,7 +84,7 @@ Die vier Befunde sehen wie vier verschiedene Probleme aus. Sie sind eines.
 
 Eine Projektplan-Datei in Excel trägt **Daten** — Zeilen, Datumsangaben, Vorgänger, Fortschritt — und sie trägt ein **Bild**: Balken, Pfeile, Farben, Zeitachse. Solange beides in derselben Datei liegt, kostet jede Änderung am Bild eine Änderung an den Daten, und jede Änderung an den Daten erzwingt ein neues Bild. Aus dieser Verschränkung folgen alle vier Befunde: Die Makro-Laufzeit ist Rendering-Aufwand in einer Datenbearbeitung. Die zweite Sicht ist eine zweite Datei, weil ein Filter das Bild verändert. Die Konfliktkopie bricht, weil Zeichnungsobjekte keinen sinnvollen Textdiff haben. Und der Screenshot ist nötig, weil das Bild die Datei nicht verlassen kann.
 
-Diese Beobachtung ist nicht neu, sie wird nur selten so deutlich ausgesprochen. In der deutschsprachigen Excel-Literatur findet sich der Satz, dass Daten und Layout in Excel miteinander verbunden seien — in sauberer Programmierung eine Sünde. Die Forschung zu Tabellenkalkulationen liefert die Zahlen dazu: Untersuchungen der [European Spreadsheet Risk Interest Group](https://eusprig.org/research-info/horror-stories/) und die Arbeiten von Raymond Panko kommen darauf, dass die große Mehrheit produktiv genutzter Tabellen Fehler enthält und dass diese Fehler vor allem eines sind — **schwer zu entdecken**.
+Diese Beobachtung ist nicht neu, sie wird nur selten so deutlich ausgesprochen: In einer Tabellenkalkulation sind Daten und Layout dasselbe Objekt — genau das, was man beim Programmieren auseinanderhält. Die Forschung zu Tabellenkalkulationen liefert die Zahlen dazu: Untersuchungen der [European Spreadsheet Risk Interest Group](https://eusprig.org/research-info/horror-stories/) und die Arbeiten von Raymond Panko kommen darauf, dass die große Mehrheit produktiv genutzter Tabellen Fehler enthält und dass diese Fehler vor allem eines sind — **schwer zu entdecken**.
 
 Genau da liegt der Kern. Nicht die Fehlerrate ist das Besondere an Tabellenkalkulationen, sondern die Unsichtbarkeit der Fehler.
 
@@ -229,7 +234,7 @@ Ist die Antwort *beides, gemischt*, dann kennen Sie Ihre nächste Fehlerklasse b
       excerpt:
         "An Excel project plan with 130 work packages showed 30 percent progress in the bar and 70 in the marker above it. After the rebuild, that error is structurally impossible.",
       coverAlt:
-        "A binder of printed tables next to a screen showing the same timeline — an image for separating data storage from rendering in a project plan",
+        "A sheet of translucent drafting film lying slightly askew over a printed bar chart, so the printed bars and the lines drawn on the film no longer line up; one bar at the lower edge is highlighted in orange",
       tags: [
         "project management with Excel",
         "Excel project plan",
@@ -276,7 +281,7 @@ The four findings look like four different problems. They are one.
 
 A project plan file in Excel carries **data** — rows, dates, predecessors, progress — and it carries a **picture**: bars, arrows, colours, a timeline. As long as both live in the same file, every change to the picture costs a change to the data, and every change to the data forces a new picture. All four findings follow from that entanglement: macro runtime is rendering work inside a data edit. The second view is a second file because a filter changes the picture. The conflict copy breaks because shape objects have no meaningful text diff. And the screenshot is necessary because the picture cannot leave the file.
 
-The observation is not new, it is just rarely stated this plainly. German spreadsheet literature puts it as data and layout being bound together — a sin in clean programming. Research supplies the numbers: work collected by the [European Spreadsheet Risk Interest Group](https://eusprig.org/research-info/horror-stories/) and by Raymond Panko finds that the large majority of operational spreadsheets contain errors, and that those errors are above all **hard to detect**.
+The observation is not new, it is just rarely stated this plainly: in a spreadsheet, data and layout are the same object — the one thing you take pains to keep apart when you write software. Research supplies the numbers: work collected by the [European Spreadsheet Risk Interest Group](https://eusprig.org/research-info/horror-stories/) and by Raymond Panko finds that the large majority of operational spreadsheets contain errors, and that those errors are above all **hard to detect**.
 
 That is the core. What is special about spreadsheets is not the error rate, it is the invisibility of the errors.
 
@@ -424,17 +429,21 @@ If the answer is *both, mixed*, then you already know your next class of errors.
   {
     slug: "ai-agent-allowlist-vs-denylist",
     date: "2026-09-16",
-    updated: "2026-09-16",
+    // Nachgezogen am 22.09.2026: Bildherkunft und Alt-Text. Der Text ist
+    // unveraendert, die ausgelieferte Seite nicht — deshalb wandert updated mit,
+    // sonst behauptet dateModified einen Stand, den es nicht mehr gibt.
+    updated: "2026-09-22",
     author: "Claude (Opus 5)",
     coAuthor: "Michael Schiffer",
     aiGenerated: true,
+    coverAiGenerated: true,
     de: {
       title: "Verbotslisten sichern KI-Agenten nicht ab",
       articleSection: "Agenten-Sicherheit",
       excerpt:
         "Ein Verbotsprofil für gesperrte Agenten-Sitzungen deckte 23 von 54 schreibenden Rechten ab. Eine der 31 Lücken machte alle anderen gegenstandslos.",
       coverAlt:
-        "Eine lange Liste verbotener Kommandos vor einer kurzen Liste erlaubter Werkzeuge — Sinnbild für Erlaubnisliste statt Verbotsliste bei KI-Agenten",
+        "Eine lange Ziegelmauer, in der ein einzelnes orangefarbenes Tor offen steht und den Blick auf eine Wiese dahinter freigibt — die Mauer darf beliebig lang sein, das eine offene Tor entwertet sie",
       tags: [
         "KI-Agenten",
         "Agenten-Sicherheit",
@@ -578,7 +587,7 @@ Wir haben die Antworten auf diese drei Fragen ungern gelesen. Aber ein Riegel, v
       excerpt:
         "A deny profile for locked-down agent sessions covered 23 of 54 write permissions. One of the 31 gaps made all the others irrelevant.",
       coverAlt:
-        "A long list of forbidden commands in front of a short list of permitted tools — allowlist instead of denylist for AI agents",
+        "A long brick wall with a single orange gate standing open, revealing a meadow beyond — the wall may be as long as you like, the one open gate undoes it",
       tags: [
         "AI agents",
         "agent security",
@@ -2367,6 +2376,7 @@ export function localizePost(post, lang) {
     // for the text, aiGenerated switches on the Article 50 disclosure.
     coAuthor: post.coAuthor || null,
     aiGenerated: Boolean(post.aiGenerated),
+    coverAiGenerated: Boolean(post.coverAiGenerated),
     // Localizable: articleSection is rendered as the kicker inside the images,
     // and tags are the keyword set — both differ per language.
     articleSection: block.articleSection || post.articleSection || "AI Engineering",

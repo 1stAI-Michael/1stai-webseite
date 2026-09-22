@@ -133,6 +133,18 @@ function checkAuthorship(where, post) {
   if (post.aiGenerated && !post.coAuthor) {
     fail(where, "aiGenerated: true without coAuthor — a person has to answer for the text");
   }
+  // The label on the text says nothing about the picture. An external auditor
+  // found exactly this gap on 2026-09-22: no metadata in the file, no
+  // digitalSourceType in the ImageObject, so a generated image and a stock
+  // photo look identical from outside — one missing a notice, the other a
+  // credit. Undeclared is a warning rather than an error, because the answer
+  // can be "no": a real photograph needs a credit, not a label.
+  if (typeof post.coverAiGenerated !== "boolean") {
+    warn(
+      where,
+      "coverAiGenerated is not declared — say where the cover image comes from (Art. 50, cf. audit 2026-09-22)"
+    );
+  }
 }
 
 function checkImages(slug, lang) {
