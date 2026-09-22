@@ -23,3 +23,7 @@ blog-inbox/*/*
 # draussen soll, ist selbst etwas, das nicht nach draussen soll. Die Vorlage
 # scripts/leak-patterns.example.json bleibt im Repo, die gefuellte Datei nicht.
 scripts/leak-patterns.json
+
+# Freigabe-Akten liegen im privaten Repo (Verweis). Ohne Schraegstrich:
+# fuer git ist ein Verweis eine Datei, kein Verzeichnis.
+freigaben

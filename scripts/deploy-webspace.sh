@@ -58,8 +58,29 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
+# Der Auditor konnte am 22.09.2026 nicht belegen, dass ein Mensch die Seite vor
+# der Veroeffentlichung gesehen hat — eine Zusage im Chat ist kein Nachweis.
+# Die Akte haengt am INHALT, nicht am Bauergebnis, deshalb genuegt ein Lauf vor
+# dem Build: was danach gebaut wird, kann das Urteil nicht mehr aendern.
+check_freigabe() {
+  if [ "${FREIGABE_UEBERGEHEN:-0}" = "1" ]; then
+    echo ""
+    echo "!!! FREIGABE_UEBERGEHEN=1 — es wird ohne Freigabe hochgeladen."
+    echo "!!! Das ist eine Entscheidung, keine Abkuerzung. Sie gehoert ins Ticket."
+    echo ""
+    return 0
+  fi
+  if node scripts/freigabe-pruefen.mjs; then
+    return 0
+  fi
+  echo ""
+  echo "Kein Upload: fuer mindestens eine Fassung fehlt die Freigabe."
+  exit 1
+}
+
 check_no_drafts
 check_no_leaks
+check_freigabe
 
 if [ "${SKIP_BUILD:-0}" = "1" ]; then
   echo "SKIP_BUILD=1 — using existing out/ ..."

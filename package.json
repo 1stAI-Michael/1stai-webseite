@@ -15,7 +15,9 @@
     "blog:check": "node scripts/blog-check.mjs",
     "blog:preview": "node scripts/blog-social-preview.mjs",
     "blog:verify": "npm run build && node scripts/blog-check.mjs --built",
-    "blog:export": "node scripts/blog-export.mjs"
+    "blog:export": "node scripts/blog-export.mjs",
+    "freigabe": "NEXT_PUBLIC_FREIGABE=1 INCLUDE_DRAFTS=1 npm run build && touch out/DRAFTS-INCLUDED && node scripts/vorschau-freigabe.mjs",
+    "freigabe:pruefen": "node scripts/freigabe-pruefen.mjs"
   },
   "dependencies": {
     "idb": "^8.0.3",

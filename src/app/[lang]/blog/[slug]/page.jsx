@@ -6,6 +6,8 @@ import { buildBlogPostingJsonLd } from "../../../../lib/blogSchema";
 import { getAllPosts, getLocalizedPost, getPostsForLang } from "../../../../content/blog/posts";
 import { markdownToHtml, readingMinutes } from "../../../../lib/markdown";
 import { t } from "../../../../lib/i18n";
+import { inhaltsAbdruck } from "../../../../lib/freigabe";
+import FreigabeBox from "../../../../components/blog/FreigabeBox";
 
 export const dynamicParams = false;
 
@@ -210,6 +212,18 @@ export default async function BlogPostPage({ params }) {
             </Link>
           ) : null}
         </nav>
+      ) : null}
+
+      {/* Nur im Freigabe-Build. Der Wert wird zur Bauzeit eingesetzt, also gibt
+          es die Box in der ausgelieferten Seite nicht — sie ist dort nicht
+          versteckt, sondern nicht vorhanden. */}
+      {process.env.NEXT_PUBLIC_FREIGABE === "1" ? (
+        <FreigabeBox
+          slug={post.slug}
+          lang={lang}
+          titel={post.title}
+          abdruck={inhaltsAbdruck(post)}
+        />
       ) : null}
     </article>
   );
