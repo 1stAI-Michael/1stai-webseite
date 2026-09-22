@@ -31,6 +31,26 @@ Eintrag am **Anfang** des `posts`-Arrays in `src/content/blog/posts.js`, zunäch
 mit `draft: true`. Pflichtfelder pro Sprachblock: `title`, `excerpt`, `bodyMarkdown`.
 Dazu `faq[]` (mind. 4) und `sources[]` (mind. 3, absolute URLs).
 
+**Auf Post-Ebene, seit 16.09.2026 vom Check erzwungen** (Michael-Entscheid vom selben Tag):
+
+```js
+author: "Claude (Opus 5)",      // wer geschrieben hat
+coAuthor: "Michael Schiffer",   // wer geprüft hat und dafür einsteht
+aiGenerated: true,              // true ODER false — fehlen gilt nicht
+```
+
+`aiGenerated` muss **ausdrücklich** dastehen. Ein fehlendes Feld ist nicht „nein",
+sondern „niemand hat es gesagt" — und genau diesen Zustand beendet die
+Kennzeichnung. Steht es auf `true`, ist `coAuthor` Pflicht: verantworten kann
+einen Text nur ein Mensch. Daraus entsteht ohne weiteres Zutun der sichtbare
+Hinweis über dem Titelbild und, im JSON-LD, der IPTC-Marker
+`trainedAlgorithmicMedia` — die zwei Hälften von Artikel 50 KI-VO (EU) 2024/1689.
+**Beiträge von vor dem 16.09.2026 bleiben ohne Kennzeichnung** — Michael-Entscheid
+vom 22.09.2026. Rückwirkend zu erklären, was damals niemand erklärt hat, wäre keine
+Kennzeichnung, sondern eine nachgeschobene Behauptung. Der Check warnt bei ihnen
+weiterhin, damit die Lücke zählbar bleibt; zu tun ist dort nichts. Betroffen sind
+drei veröffentlichte Beiträge.
+
 Regeln, die der Check erzwingt:
 
 - `title` ≤ **52** Zeichen — das Layout-Template hängt " - 1stAI" an, zusammen
@@ -128,6 +148,22 @@ den Puppeteer-Cache. Nur PNG, niemals SVG: Social-Plattformen rendern kein SVG.
 Layout: Landscape legt die Typografie auf eine weiße Fläche über dem Foto, quadratisch
 und 9:16 stellen Foto oben und Textblock darunter. Unten immer eine Linie in `#F97316`.
 
+**⚠️ Breite Quellen brechen im 9:16-Format** (gemessen 16.09.2026). Der Fotokasten
+der Story ist 1080 × 883 — also fast quadratisch, nicht hochkant. Eine Quelle, die
+deutlich breiter als 16:9 ist, wird von `object-fit: cover` hart an den Seiten
+beschnitten; bei uns lag das Bildmotiv danach halb außerhalb. Das **scheitert nicht**,
+es liefert ein Bild, das niemand ansieht.
+
+Abhilfe: einen zweiten, engeren Ausschnitt derselben Quelle danebenlegen und nur das
+eine Format daraus rendern — der Ausschnitt sollte etwa 1080:883 haben.
+
+```bash
+npm run blog:assets -- --slug <slug> --pick 2 --formats story
+```
+
+Jedes Story-Bild einmal ansehen, bevor es weitergeht. Die anderen fünf Formate
+verzeihen eine breite Quelle.
+
 ## Schritt 4 — EN-Fassung
 
 Redaktionelle Übersetzung, keine wortwörtliche: Zahlen und Tabellen identisch,
@@ -182,6 +218,13 @@ und `feed.xml` vorhanden.
 
 `blog:verify` ruft bewusst `npm run build` und nicht `next build` — sonst läuft
 der `prebuild` nicht und `llms.txt` fehlt.
+
+Dazu die Kennzeichnung: `blog:check` bricht ab, wenn `aiGenerated` fehlt oder auf
+`true` steht, ohne dass ein `coAuthor` eingetragen ist. `blog:verify` prüft danach
+im gebauten HTML, dass der sichtbare Hinweis und der IPTC-Marker wirklich
+ausgeliefert werden — ein Feld im Datensatz ist noch keine Kennzeichnung auf der
+Seite. Beides gilt auch für Entwürfe: was erst beim Publizieren auffällt, fällt
+zu spät auf.
 
 Fehler blockieren (Exit 1), Warnungen nicht. `draft: true` schließt einen Post
 komplett aus — keine Route, kein Sitemap-Eintrag, kein Feed.

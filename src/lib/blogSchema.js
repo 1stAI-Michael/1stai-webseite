@@ -25,14 +25,47 @@ function isoDate(date) {
   return `${date}T09:00:00+02:00`;
 }
 
-function author() {
+/** IPTC digital source type — the machine-readable half of Article 50. */
+const AI_SOURCE_TYPE =
+  "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia";
+
+const AI_DISCLOSURE = {
+  de: (name) => `KI-generierter Text. Geprüft und freigegeben von ${name}, der dafür einsteht.`,
+  en: (name) => `AI-generated text. Reviewed and approved by ${name}, who is answerable for it.`,
+};
+
+function person(name) {
   return {
     "@type": "Person",
-    name: siteConfig.contact.founder,
+    name: name || siteConfig.contact.founder,
     url: siteConfig.url,
     jobTitle: "AI Consultant",
     sameAs: siteConfig.family.map((f) => f.url),
   };
+}
+
+/**
+ * An AI writer is not a Person. Typing it as one in structured data would
+ * assert exactly what Article 50 asks us to disclose, so it goes in as the
+ * software it is — and the human co-author keeps the Person entry, because
+ * a person is who can answer for a text.
+ */
+function author(post) {
+  if (!post.aiGenerated) return person(post.author);
+  const list = [
+    {
+      "@type": "SoftwareApplication",
+      name: post.author,
+      applicationCategory: "AI writing assistant",
+      publisher: {
+        "@type": "Organization",
+        name: "Anthropic",
+        url: "https://www.anthropic.com",
+      },
+    },
+  ];
+  if (post.coAuthor) list.push(person(post.coAuthor));
+  return list;
 }
 
 function publisher() {
@@ -62,7 +95,15 @@ export function buildBlogPostingJsonLd(post) {
     dateModified: isoDate(post.updated),
     wordCount: countWords(post.bodyMarkdown),
     articleSection: post.articleSection,
-    author: author(),
+    author: author(post),
+    ...(post.aiGenerated
+      ? {
+          digitalSourceType: AI_SOURCE_TYPE,
+          disambiguatingDescription: (AI_DISCLOSURE[lang] || AI_DISCLOSURE.en)(
+            post.coAuthor || siteConfig.contact.founder
+          ),
+        }
+      : {}),
     publisher: publisher(),
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     image: {
@@ -111,7 +152,18 @@ export function buildBlogPostingJsonLd(post) {
     ],
   });
 
-  return JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+  // digitalSourceType is IPTC, not schema.org — declare it in the context so
+  // it resolves instead of being silently dropped by a strict consumer.
+  const context = [
+    "https://schema.org",
+    {
+      digitalSourceType: {
+        "@id": "http://www.iptc.org/std/nar/2006-10-01/digitalSourceType",
+        "@type": "@id",
+      },
+    },
+  ];
+  return JSON.stringify({ "@context": context, "@graph": graph });
 }
 
 export function buildBlogIndexJsonLd(lang, postsForLang) {

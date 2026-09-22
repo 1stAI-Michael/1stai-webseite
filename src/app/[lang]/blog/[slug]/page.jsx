@@ -95,12 +95,32 @@ export default async function BlogPostPage({ params }) {
           {readingMinutes(post.bodyMarkdown)} {tr.blog.readingTimeUnit}
           <span aria-hidden="true"> · </span>
           {post.author}
+          {post.coAuthor ? (
+            <>
+              <span aria-hidden="true"> · </span>
+              {tr.blog.coAuthorLabel}: {post.coAuthor}
+            </>
+          ) : null}
         </p>
         <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold leading-tight tracking-[-0.025em] text-ink">
           {post.title}
         </h1>
         <p className="mt-4 font-body text-lg text-ink-muted">{post.excerpt}</p>
       </header>
+
+      {/* Article 50 disclosure. Above the fold on purpose: a label a reader
+          only meets after the article has done its work is not a label. */}
+      {post.aiGenerated ? (
+        <p
+          data-ai-generated="true"
+          className="mt-6 rounded-xl border border-ink-subtle px-4 py-3 font-body text-sm text-ink-muted"
+        >
+          <strong className="font-semibold text-ink">{tr.blog.aiNoticeTitle}</strong>{" "}
+          {tr.blog.aiNoticeBody
+            .replace("{author}", post.author)
+            .replace("{coAuthor}", post.coAuthor || "")}
+        </p>
+      ) : null}
 
       <img
         src={post.coverImage}

@@ -103,6 +103,37 @@ function parseArgs(argv) {
   return args;
 }
 
+// Article 50 EU AI Act. Mandatory from the day the label existed. Posts older
+// than that stay unlabelled — Michael decided this on 2026-09-22, and it is a
+// decision, not an omission: retroactively declaring what nobody declared at the
+// time would not be a label. They still warn, so the gap stays countable, but the
+// warning states the fact instead of demanding an action nobody will take.
+const AI_LABEL_SINCE = "2026-09-16";
+
+/**
+ * Who wrote it, and was it a machine? Both answers have to be explicit: a
+ * missing `aiGenerated` is not "no" — it is "nobody said", and that is the
+ * state the label exists to end.
+ */
+function checkAuthorship(where, post) {
+  if (!post.author) fail(where, "author is missing");
+  const mandatory = String(post.date || "") >= AI_LABEL_SINCE;
+  if (typeof post.aiGenerated !== "boolean") {
+    const message =
+      "aiGenerated is not declared — set it to true or false (Art. 50 EU AI Act)";
+    if (mandatory) fail(where, message);
+    else
+      warn(
+        where,
+        `no aiGenerated flag; predates ${AI_LABEL_SINCE} and stays unlabelled (Michael, 2026-09-22) — nothing to do`
+      );
+    return;
+  }
+  if (post.aiGenerated && !post.coAuthor) {
+    fail(where, "aiGenerated: true without coAuthor — a person has to answer for the text");
+  }
+}
+
 function checkImages(slug, lang) {
   const dir = path.join(ROOT, "public", "blog", slug, lang);
   const where = `${slug} images [${lang}]`;
@@ -349,6 +380,7 @@ async function main() {
       checkImages(post.slug, lang);
     }
 
+    checkAuthorship(where, post);
     checkSocialText(post.slug);
   }
 
@@ -378,6 +410,12 @@ async function main() {
             [/"@type":"BlogPosting"/, "BlogPosting JSON-LD"],
             [/"@type":"FAQPage"/, "FAQPage JSON-LD"],
           ];
+          if (post.aiGenerated) {
+            checks.push(
+              [/data-ai-generated="true"/, "the visible AI disclosure"],
+              [/trainedAlgorithmicMedia/, "the machine-readable AI source type"]
+            );
+          }
           for (const [pattern, label] of checks) {
             if (!pattern.test(html)) fail("out/", `${lang}/blog/${post.slug}/ is missing ${label}`);
           }
@@ -438,6 +476,7 @@ async function main() {
   for (const post of drafts) {
     const where = `${post.slug} (draft)`;
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(post.slug)) fail(where, "slug must be lowercase kebab-case");
+    checkAuthorship(where, post);
     for (const lang of LANGS) {
       const localized = localizePost(post, lang);
       if (!localized) {

@@ -20,6 +20,703 @@
 export const posts = [
   // Newest first. Add new posts at the TOP of this array.
   {
+    slug: "projektplan-excel-daten-und-bild-trennen",
+    date: "2026-09-22",
+    updated: "2026-09-22",
+    author: "Claude (Opus 5)",
+    coAuthor: "Michael Schiffer",
+    aiGenerated: true,
+    de: {
+      title: "Der Excel-Projektplan war nie das Problem",
+      articleSection: "Projektplanung",
+      excerpt:
+        "Ein Excel-Projektplan mit 130 Arbeitspaketen zeigte im Balken 30 Prozent Fortschritt und in der Markierung darüber 70. Nach dem Umbau ist dieser Fehler baulich unmöglich.",
+      coverAlt:
+        "Ein Aktenordner mit Tabellenausdrucken neben einem Bildschirm mit derselben Zeitachse — Sinnbild für die Trennung von Datenhaltung und Darstellung im Projektplan",
+      tags: [
+        "Projektmanagement mit Excel",
+        "Excel-Projektplan",
+        "Gantt-Diagramm",
+        "VBA",
+        "Tabellenkalkulation Grenzen",
+        "SQLite",
+        "statische HTML",
+        "CSV",
+        "Datenhaltung und Darstellung",
+        "Projektplanung",
+        "Werkzeugbau",
+        "Legacy-Ablösung",
+      ],
+      bodyMarkdown: `Ein Projektplan über rund 20 Monate lag in einer Excel-Datei mit etwa einem Dutzend VBA-Makros: **130 Arbeitspakete** in zwölf Phasen, Balken als Zeichnungsobjekte über Datumsspalten, Vorgänger-Pfeile per Makro nachgezogen. Heute liegt derselbe Plan in drei CSV-Dateien, einer generierten SQLite und **einer** HTML-Datei. Der interessante Teil daran ist nicht, dass es schneller geworden ist. Der interessante Teil ist ein Fehler, den es vorher gab und jetzt nicht mehr geben *kann*: Der Fortschrittsbalken sagte 30 Prozent, die Markierung darüber sagte 70, und niemand konnte sehen, wer recht hatte.
+
+**Auf einen Blick:**
+
+- **Die Tabelle war nie das Problem — das Rendern in derselben Datei war es.** Excel spielte hier zwei Rollen gleichzeitig: Datenhaltung und Darstellung.
+- **Der Kipppunkt ist nicht die Zeilenzahl.** 130 Zeilen sind für eine Tabellenkalkulation nichts. 130 Zeilen mit makro-gezeichneten Abhängigkeiten sind zu viel.
+- **Zwei Sichten auf denselben Plan wurden zu zwei Dateien** und drifteten auseinander. Beim letzten Vergleich fehlten der externen Sicht **acht Zeilen**. Niemand konnte sagen, seit wann.
+- **Die Auslieferung wuchs um Faktor 22, und das ist gleichgültig.** Rund 7 KB Tabelle gegen rund 150 KB HTML — die Tabelle brachte kein Bild mit, die HTML *ist* das Bild.
+- **2 733 Zeilen Python, null externe Abhängigkeiten.** Kein Framework, keine Datenbank-Instanz, kein Server.
+
+Wer einen Projektplan in Excel pflegt, kennt den Reflex: *Ich mache das Excel schöner.* Der Reflex ist verständlich und führt in die falsche Richtung, weil er die eine Frage überspringt, auf die es ankommt — welche Aufgabe diese Datei eigentlich hat.
+
+## Was Excel gut konnte, und warum das trotzdem nicht reichte
+
+Es lohnt, mit dem Lob anzufangen, weil sonst der Rest nicht stimmt. Der Eigner des Plans konnte tippen, ohne das Werkzeug zu wechseln. Neue Zeile, Datum hinein, fertig. Autofilter, Kopieren-nach-unten, gemischte Bezüge — das ist Muskelspeicher, und den wirft man nicht leichtfertig weg. Jede Alternative, die damit anfängt, dem Eigner eine neue Oberfläche beizubringen, hat schon verloren.
+
+Vier Dinge trugen am Ende nicht mehr, alle vier messbar:
+
+**Die Vorgänger-Ketten skalierten nicht.** Bei rund 130 Arbeitspaketen war das Makro für die Pfeile pro Durchlauf mehrere Sekunden beschäftigt. In dieser Zeit stand der Cursor, und Tastatureingaben landeten in Zellen, für die sie nicht gedacht waren.
+
+**Zwei Sichten waren eine zu viel.** Der Auftraggeber sollte eine reduzierte Fassung sehen, das Team die vollständige. In Excel hieß das: zwei Arbeitsmappen. Beim letzten Abgleich fehlten der reduzierten Fassung acht Zeilen, die in der internen längst standen — und niemand konnte belegen, wann die Divergenz begonnen hatte. Das ist der Punkt: Nicht der Unterschied war das Problem, sondern dass er unbemerkt entstehen konnte.
+
+**Konflikte auf dem gemeinsamen Laufwerk.** Zwei parallele Änderungen erzeugten regelmäßig eine Konfliktkopie. Das Zusammenführen brach die Makro-Referenzen; die Wiederherstellung war jedes Mal ein Zwanzig-Minuten-Job.
+
+**Reviews nur per Screenshot.** Der Druck in PDF zerschnitt lange Zeilen, die Zeitachse lief über mehrere Seiten. Der Auftraggeber bekam Bilder vom Plan, nicht den Plan.
+
+## Warum ein Projektplan in Excel kippt: zwei Rollen in einer Datei
+
+Die vier Befunde sehen wie vier verschiedene Probleme aus. Sie sind eines.
+
+Eine Projektplan-Datei in Excel trägt **Daten** — Zeilen, Datumsangaben, Vorgänger, Fortschritt — und sie trägt ein **Bild**: Balken, Pfeile, Farben, Zeitachse. Solange beides in derselben Datei liegt, kostet jede Änderung am Bild eine Änderung an den Daten, und jede Änderung an den Daten erzwingt ein neues Bild. Aus dieser Verschränkung folgen alle vier Befunde: Die Makro-Laufzeit ist Rendering-Aufwand in einer Datenbearbeitung. Die zweite Sicht ist eine zweite Datei, weil ein Filter das Bild verändert. Die Konfliktkopie bricht, weil Zeichnungsobjekte keinen sinnvollen Textdiff haben. Und der Screenshot ist nötig, weil das Bild die Datei nicht verlassen kann.
+
+Diese Beobachtung ist nicht neu, sie wird nur selten so deutlich ausgesprochen. In der deutschsprachigen Excel-Literatur findet sich der Satz, dass Daten und Layout in Excel miteinander verbunden seien — in sauberer Programmierung eine Sünde. Die Forschung zu Tabellenkalkulationen liefert die Zahlen dazu: Untersuchungen der [European Spreadsheet Risk Interest Group](https://eusprig.org/research-info/horror-stories/) und die Arbeiten von Raymond Panko kommen darauf, dass die große Mehrheit produktiv genutzter Tabellen Fehler enthält und dass diese Fehler vor allem eines sind — **schwer zu entdecken**.
+
+Genau da liegt der Kern. Nicht die Fehlerrate ist das Besondere an Tabellenkalkulationen, sondern die Unsichtbarkeit der Fehler.
+
+## Der Schnitt: drei CSV-Dateien, eine SQLite, eine HTML
+
+Die Bauregel ist knapp: Datenhaltung in CSV, Ableitung in einer generierten SQLite, Darstellung in einer statischen HTML. Kein Schritt hat mehr als eine Aufgabe, und jeder ist einzeln aufrufbar.
+
+Die Quellen der Wahrheit sind reine Textdateien: eine Tabelle mit den Arbeitspaketen und Phasenköpfen, eine mit den Phasen-Stammdaten, eine mit den Metadaten des Plans als Schlüssel-Wert-Paare. Aus diesen drei Dateien entsteht in einem Aufruf alles Weitere:
+
+\`\`\`
+drei CSV-Dateien
+      |
+      |  Init-Skript  (431 Zeilen)
+      v
+Plan-Datenbank (SQLite)        -- erzeugt, nie von Hand editiert
+      |
+      |  Build-Skript (1 303 Zeilen)
+      v
+eine HTML-Datei, rund 150 KB   -- offline lauffähig, JSON eingebettet
+ein Konsistenz-Bericht (JSON)  -- Widersprüche in den Vorgänger-Ketten
+\`\`\`
+
+Zusammen **2 733 Zeilen** Python und HTML/JS, ausschließlich Standardbibliothek. Die Auslieferung ist **eine** Datei mit eingebetteten Daten: Der Empfänger bekommt einen Link auf eine Datei — kein Server, kein Login, kein Konto.
+
+Vier Entscheidungen darin haben sich als tragend erwiesen:
+
+1. **Listenpositionen in Zehnerschritten statt fortlaufender Nummern.** Phasenköpfe liegen auf 100, 200, 300, Arbeitspakete dazwischen. Das lässt Platz zum Einfügen, ohne umzunummerieren. Die Zeilen-ID der Datenbank ändert sich bei jedem Neubau — die stabile Referenz ist die Listenposition, nicht die ID.
+2. **Zwei Wege zu einem Startdatum, und einer gewinnt immer.** Entweder ein gesetzter Anker oder eine Berechnung aus dem Vorgänger. Ein gesetzter Anker schlägt die Rechnung — das ist die Regel für externe Termine und für Dinge, die bereits passiert sind. Alles andere wird gerechnet, in bis zu zehn Durchläufen.
+3. **Alle vier Vorgänger-Typen von Anfang an** (Ende-Anfang, Anfang-Anfang, Ende-Ende, Anfang-Ende). Nicht der übliche Weg, mit einem anzufangen und den Rest zu vertagen: Im Bestandsplan waren alle vier bereits in Gebrauch, parallele Workshops als Anfang-Anfang, Abnahmen als Ende-Ende.
+4. **Zwei Detailstufen je Zeile statt zwei Dateien.** Die reduzierte Sicht blendet die feinere Stufe aus — in derselben HTML, per Schalter. Die Divergenz aus dem Bestand kann damit strukturell nicht mehr entstehen.
+
+**Was daran ausdrücklich kein Fortschritt ist:** Die Datenpflege bleibt eine Tabelle. Wer nicht im Texteditor arbeiten will, bekommt einen kleinen lokalen Editor, dessen Oberfläche aussieht wie die gewohnte Tabelle. Der Unterschied ist unsichtbar, und das ist Absicht: Das Speichern schreibt nur die CSV-Datei zurück und stößt den Neubau an. Darstellung und Bearbeitung teilen sich keine Datei mehr.
+
+## Der stille Fehler, den die neue Form nicht mehr zulässt
+
+Das ist der Befund, wegen dem sich der Umbau gelohnt hat.
+
+In der Excel-Fassung war die Fortschrittsanzeige ein Overlay über dem Balken — zwei Objekte, die zufällig übereinander lagen. Wurden Zeilen umsortiert, gefiltert oder eine Phase ausgeblendet, zog der Balken um und das Overlay blieb. **Der Balken sagte 30 Prozent, das Overlay sagte 70.** Wer den Balken las, hielt ein Arbeitspaket für weiter zurück, als es war; wer das Overlay las, glaubte an einen Fortschritt, den es nicht gab. In zwei Reviews vor dem Umbau steckte genau dieser Fehler, je einmal in einer Zeile mittlerer Priorität.
+
+Der Punkt ist nicht, dass hier jemand unaufmerksam war. Der Punkt ist, dass **die Datei beide Zustände gleichzeitig anzeigen konnte, ohne sich zu beschweren**. Ein Widerspruch, der nicht auffällt, ist teurer als einer, der einen Fehler wirft.
+
+Die HTML-Fassung zeichnet den Fortschritt als zweiten Balken **innerhalb** des ersten, mit derselben Ankerposition. Es gibt keinen Weg, den einen zu bewegen, ohne den anderen mitzunehmen — nicht weil jemand diszipliniert wäre, sondern weil beide dieselbe Zeilen-ID teilen. Der Fehlertyp ist nicht seltener geworden, sondern unmöglich.
+
+**Die übertragbare Regel:** Wenn in einer Tabellenkalkulation zwei Elemente übereinanderliegen und beide bewegt werden müssen, ist der nächste Umzug ein Fehler mit Vorlaufzeit. In einer strukturierten Ausgabe liegen sie in *einem* Knoten und lassen sich nicht mehr voneinander lösen.
+
+## Was Excel konnte und was jetzt gemessen anders ist
+
+| Was | Excel mit VBA | Statische HTML aus CSV |
+|---|---|---|
+| Auslieferungsformat | Arbeitsmappe mit Makros | eine HTML-Datei mit eingebetteten Daten |
+| Größe der Auslieferung | rund 7 KB, komprimiert | rund 150 KB, offline lauffähig |
+| Voraussetzung beim Empfänger | Excel plus Makro-Rechte | ein Browser |
+| Zwei Sichten | zwei getrennte Dateien | ein Schalter in derselben Datei |
+| Wochenend-Behandlung | Zellformel je Datum | einmal zentral im Init-Skript |
+| Vorgänger-Pfeile | Zeichnungsobjekte, Umbruch bei Zoom | SVG auf gemessener Zeilenhöhe |
+| Konflikt auf dem Netzlaufwerk | Konfliktkopie, gebrochene Makros | Textdiff in der CSV, in Sekunden lösbar |
+| Neuer Vorgänger-Typ | neues Makro, neue Spalte | ein Attribut an der Zeile |
+| Konsistenzprüfung | Sichtprüfung | Bericht, in der HTML sichtbar |
+| Druck und PDF | zerschneidet lange Zeilen | Browser-Druck, eine Seite je Zoomstufe |
+
+Zur Größe: Die HTML ist rund 22-mal größer als die Tabelle, und es spielt keine Rolle. Die Tabelle brachte kein Bild mit — wer sie öffnete, ließ das Bild neu zeichnen. Die HTML *ist* das Bild und passt trotzdem in einen Mailanhang.
+
+## Was der Umbau gekostet hat
+
+Nüchtern: Der Umbau selbst war ein Wochenendprojekt, rund zwölf Stunden auf drei Sitzungen verteilt. Danach kamen über zwei Wochen der lokale Editor und der Konsistenz-Bericht dazu — Komfort, nicht Kern. Beide **müssen** nicht benutzt werden; CSV im Texteditor plus ein Aufruf des Neubaus ist der vollständige Rückfallweg.
+
+Der Ertrag, ebenso nüchtern:
+
+- Die Divergenz zwischen externer und interner Sicht ist konstruktiv weg. Kein Abgleich mehr, keine acht fehlenden Zeilen.
+- Reviews laufen in der HTML selbst. Die Fassungsnummer der Auslieferung kommt aus den Metadaten — die Frage, welche Version der andere gerade ansieht, stellt sich nicht mehr.
+- Änderungen in der Mitte des Plans sind billig geworden. Eine Verschiebung um vier Arbeitstage zieht durch die Vorgänger-Kette; niemand rechnet von Hand nach.
+- Der Konsistenz-Bericht fängt ab, was vorher unsichtbar war: ein gesetztes Startdatum, das der Vorgänger-Rechnung widerspricht. Vor der HTML sah man das nicht.
+
+## Grenzen
+
+Drei Dinge, die der Umbau **nicht** gebracht hat — sie gehören dazu, sonst ist es Werbung:
+
+**Excel bleibt bei Massenänderungen schneller.** Der lokale Editor ist bequemer als eine Tabelle, wenn man eine Zeile ändert. Bei Änderungen an drei Spalten über vierzig Zeilen gewinnt Excel mit seinen Tastaturkürzeln, und zwar deutlich.
+
+**Der Neubau ist schnell, aber nicht sofort.** Zwischen Speichern und neuem Bild vergehen ein bis zwei Sekunden. Excel zeichnete den Balken sofort — wenn auch manchmal an der falschen Stelle.
+
+**Der Ansatz ersetzt kein Projektmanagement-Werkzeug.** Hier geht es um einen Plan mit 130 Arbeitspaketen und einem Eigner. Ressourcenplanung über mehrere Projekte, Rollenrechte oder eine echte Mehrbenutzer-Bearbeitung sind nicht das Ziel gewesen und kommen auch nicht heraus. Wer das braucht, braucht ein anderes Werkzeug — und der Vergleich in diesem Text hilft ihm nicht.
+
+## Wo das Muster sonst trägt
+
+Der Schnitt CSV zu SQLite zu HTML ist nicht spezifisch für Projektpläne. Er trägt überall dort, wo eine Tabellenkalkulation zwei Rollen gleichzeitig spielt:
+
+- **Preislisten mit Staffeln.** Die Staffeln sind Daten, die Übersicht ist Bild. Beim Kopieren wandern Staffeln in falsche Zeilen; in einer Ableitung nicht.
+- **Vertragsübersichten mit Laufzeiten.** Wer Laufzeiten in Excel zeichnet, kennt die Balken, die beim Filtern hinter den Rahmen laufen.
+- **Bewerbungs- oder Vertriebstrichter** mit Status und Zieldatum. Die Fälle sind Daten, der Trichter ist Bild — und der Bild-Teil bläht die Datei auf.
+
+Der Aufwand ist klein, sobald das erste Muster steht: ein Skript, das aus CSV in SQLite schiebt, eines, das daraus eine HTML rendert, und zwei bis drei CSV-Tabellen.
+
+## Fazit: eine Frage, die sich in fünf Minuten beantworten lässt
+
+Die eine Maßnahme, die unmittelbar etwas bringt, kostet keinen Umbau. Sie lautet: **Öffnen Sie Ihre wichtigste Excel-Datei und fragen Sie, welche Zellen Daten sind und welche Bild.** Bedingte Formatierung, Balken, Zeichnungsobjekte, Farben, ausgeblendete Zeilen für eine zweite Sicht — das ist alles Bild.
+
+Ist die Antwort *beides, gemischt*, dann kennen Sie Ihre nächste Fehlerklasse bereits. Sie wird nicht mit einer Fehlermeldung kommen. Sie wird wie ein korrekt aussehender Plan aussehen, in dem eine Zahl nicht zu der danebenstehenden passt — und niemand wird sagen können, seit wann.`,
+      faq: [
+        {
+          q: "Ab wann ist ein Projektplan zu groß für Excel?",
+          a: "Die Zeilenzahl ist der falsche Maßstab. 130 Arbeitspakete sind für eine Tabellenkalkulation wenig. Entscheidend ist, ob die Datei neben den Daten auch das Bild trägt — Balken, Pfeile, Farben, bedingte Formatierung. Sobald das Zeichnen in derselben Datei passiert wie die Datenpflege, kostet jede Änderung an der einen Seite eine an der anderen. Bei uns machte sich das zuerst als mehrsekündige Makro-Laufzeit pro Durchlauf bemerkbar, während der Cursor stand.",
+        },
+        {
+          q: "Was bringt es, Datenhaltung und Darstellung zu trennen?",
+          a: "Es verschwindet eine ganze Fehlerklasse statt einzelner Fehler. Konkret: zwei Sichten auf denselben Plan brauchen keine zweite Datei mehr und können deshalb nicht mehr auseinanderdriften; Konflikte auf einem gemeinsamen Laufwerk werden zu einem Textdiff statt zu einer Konfliktkopie mit gebrochenen Makros; und eine Fortschrittsmarkierung kann sich nicht mehr von ihrem Balken lösen, weil beide dieselbe Zeilen-ID teilen.",
+        },
+        {
+          q: "Wie baut man einen Gantt-Plan ohne Excel und ohne Projektmanagement-Software?",
+          a: "Drei Schritte, jeder einzeln aufrufbar: CSV-Dateien als Quelle der Wahrheit, ein Skript, das daraus eine SQLite erzeugt und die Datumsrechnung aus den Vorgängern durchführt, und ein zweites Skript, das eine einzelne HTML-Datei mit eingebetteten Daten rendert. In unserem Fall zusammen rund 2 700 Zeilen Python, ausschließlich Standardbibliothek — kein Framework, keine Datenbank-Instanz, kein Server.",
+        },
+        {
+          q: "Warum eine statische HTML-Datei statt eines Webtools?",
+          a: "Weil der Empfänger nichts installieren, nichts einrichten und sich nirgends anmelden muss. Die Auslieferung ist eine Datei von rund 150 KB, die offline läuft und per Mail verschickt werden kann. Sie ist rund 22-mal größer als die frühere Arbeitsmappe, und das ist gleichgültig: Die Arbeitsmappe brachte kein Bild mit, sondern ließ es bei jedem Öffnen neu zeichnen.",
+        },
+        {
+          q: "Was spricht dagegen, den Excel-Projektplan zu behalten?",
+          a: "Nichts, solange die Datei nur Daten trägt und das Bild woanders entsteht. Und Excel bleibt auch nach einem Umbau in einem Punkt überlegen: Bei Massenänderungen über viele Zeilen und Spalten gewinnen die Tastaturkürzel einer Tabellenkalkulation deutlich. Der Umbau lohnt sich, wenn zwei Sichten gepflegt werden, wenn mehrere Personen an derselben Datei arbeiten oder wenn der Plan regelmäßig nach außen gezeigt wird.",
+        },
+      ],
+      sources: [
+        {
+          title: "European Spreadsheet Risk Interest Group — Horror Stories",
+          url: "https://eusprig.org/research-info/horror-stories/",
+        },
+        {
+          title: "Raymond R. Panko: What We Don't Know About Spreadsheet Errors Today",
+          url: "https://arxiv.org/pdf/1602.02601",
+        },
+        {
+          title: "Warum Excel eine Gefahr für Projekte darstellen kann",
+          url: "https://projekte-leicht-gemacht.de/blog/pm-tools/excel-projektmanagement-nachteile/",
+        },
+        {
+          title: "Informatik Aktuell: Projektmanagement mit Excel",
+          url: "https://www.informatik-aktuell.de/management-und-recht/projektmanagement/projektmanagement-mit-excel.html",
+        },
+        {
+          title: "SQLite — Appropriate Uses For SQLite",
+          url: "https://www.sqlite.org/whentouse.html",
+        },
+      ],
+    },
+    en: {
+      title: "The Excel project plan was never the problem",
+      articleSection: "Project planning",
+      excerpt:
+        "An Excel project plan with 130 work packages showed 30 percent progress in the bar and 70 in the marker above it. After the rebuild, that error is structurally impossible.",
+      coverAlt:
+        "A binder of printed tables next to a screen showing the same timeline — an image for separating data storage from rendering in a project plan",
+      tags: [
+        "project management with Excel",
+        "Excel project plan",
+        "Gantt chart",
+        "VBA",
+        "spreadsheet limits",
+        "SQLite",
+        "static HTML",
+        "CSV",
+        "separating data and presentation",
+        "project planning",
+        "tooling",
+        "legacy replacement",
+      ],
+      bodyMarkdown: `A project plan spanning roughly 20 months lived in an Excel file with about a dozen VBA macros: **130 work packages** across twelve phases, bars drawn as shape objects over date columns, predecessor arrows redrawn by macro. Today the same plan lives in three CSV files, a generated SQLite database and **one** HTML file. The interesting part is not that it got faster. The interesting part is an error that used to happen and now *cannot*: the progress bar said 30 percent, the marker on top of it said 70, and nobody could tell which one was right.
+
+**At a glance:**
+
+- **The spreadsheet was never the problem — rendering inside the same file was.** Excel played two roles at once here: data storage and presentation.
+- **The tipping point is not row count.** 130 rows are nothing for a spreadsheet. 130 rows with macro-drawn dependencies are too many.
+- **Two views of one plan became two files** and drifted apart. At the last comparison the external view was missing **eight rows**. Nobody could say since when.
+- **The deliverable grew by a factor of 22, and it does not matter.** Roughly 7 KB of spreadsheet against roughly 150 KB of HTML — the spreadsheet carried no picture, the HTML *is* the picture.
+- **2,733 lines of Python, zero external dependencies.** No framework, no database instance, no server.
+
+Anyone maintaining a project plan in Excel knows the reflex: *I will make the spreadsheet nicer.* The reflex is understandable and points the wrong way, because it skips the one question that matters — what job this file actually has.
+
+## What Excel did well, and why that still was not enough
+
+It is worth starting with the praise, otherwise the rest does not hold. The plan owner could type without switching tools. New row, date in, done. Autofilter, fill-down, mixed references — that is muscle memory, and you do not throw it away lightly. Any alternative that starts by teaching the owner a new interface has already lost.
+
+Four things stopped carrying, all four measurable:
+
+**Predecessor chains did not scale.** At around 130 work packages the arrow macro was busy for several seconds per pass. During that time the cursor froze, and keystrokes landed in cells they were not meant for.
+
+**Two views were one too many.** The client was meant to see a reduced version, the team the full one. In Excel that meant two workbooks. At the last reconciliation the reduced version was missing eight rows that had long been in the internal one — and nobody could prove when the divergence had started. That is the point: the difference was not the problem, the fact that it could arise unnoticed was.
+
+**Conflicts on the shared drive.** Two parallel edits regularly produced a conflict copy. Merging broke the macro references; recovery was a twenty-minute job every time.
+
+**Reviews only by screenshot.** Printing to PDF cut long rows apart and spread the timeline over several pages. The client received pictures of the plan, not the plan.
+
+## Why an Excel project plan tips over: two roles in one file
+
+The four findings look like four different problems. They are one.
+
+A project plan file in Excel carries **data** — rows, dates, predecessors, progress — and it carries a **picture**: bars, arrows, colours, a timeline. As long as both live in the same file, every change to the picture costs a change to the data, and every change to the data forces a new picture. All four findings follow from that entanglement: macro runtime is rendering work inside a data edit. The second view is a second file because a filter changes the picture. The conflict copy breaks because shape objects have no meaningful text diff. And the screenshot is necessary because the picture cannot leave the file.
+
+The observation is not new, it is just rarely stated this plainly. German spreadsheet literature puts it as data and layout being bound together — a sin in clean programming. Research supplies the numbers: work collected by the [European Spreadsheet Risk Interest Group](https://eusprig.org/research-info/horror-stories/) and by Raymond Panko finds that the large majority of operational spreadsheets contain errors, and that those errors are above all **hard to detect**.
+
+That is the core. What is special about spreadsheets is not the error rate, it is the invisibility of the errors.
+
+## The cut: three CSV files, one SQLite, one HTML
+
+The building rule is short: data in CSV, derivation in a generated SQLite database, presentation in a static HTML file. No step has more than one job, and each one is callable on its own.
+
+The sources of truth are plain text files: one table of work packages and phase headers, one of phase master data, one of plan metadata as key-value pairs. From those three files a single call produces everything else:
+
+\`\`\`
+three CSV files
+      |
+      |  init script   (431 lines)
+      v
+plan database (SQLite)         -- generated, never edited by hand
+      |
+      |  build script  (1,303 lines)
+      v
+one HTML file, roughly 150 KB  -- runs offline, data embedded
+one consistency report (JSON)  -- contradictions in predecessor chains
+\`\`\`
+
+Together **2,733 lines** of Python and HTML/JS, standard library only. The deliverable is **one** file with embedded data: the recipient gets a link to a file — no server, no login, no account.
+
+Four decisions inside it turned out to carry weight:
+
+1. **List positions in steps of ten instead of running numbers.** Phase headers sit at 100, 200, 300, work packages in between. That leaves room to insert without renumbering. The database row ID changes on every rebuild — the stable reference is the list position, not the ID.
+2. **Two ways to a start date, and one always wins.** Either an explicit anchor or a calculation from the predecessor. An anchor beats the calculation — that is the rule for external deadlines and for things that already happened. Everything else is computed, in up to ten passes.
+3. **All four predecessor types from the start** (finish-start, start-start, finish-finish, start-finish). Not the usual route of shipping one and deferring the rest: the existing plan already used all four, parallel workshops as start-start, sign-offs as finish-finish.
+4. **Two detail levels per row instead of two files.** The reduced view hides the finer level — in the same HTML, by toggle. The divergence from the old setup can no longer arise structurally.
+
+**What is explicitly not progress here:** data entry remains a table. Anyone who does not want to work in a text editor gets a small local editor whose interface looks like the familiar spreadsheet. The difference is invisible, and that is deliberate: saving writes the CSV file back and triggers the rebuild. Presentation and editing no longer share a file.
+
+## The silent error the new form no longer allows
+
+This is the finding that made the rebuild worthwhile.
+
+In the Excel version the progress indicator was an overlay on top of the bar — two objects that happened to sit above each other. When rows were re-sorted, filtered, or a phase was hidden, the bar moved and the overlay stayed. **The bar said 30 percent, the overlay said 70.** Reading the bar, you thought a work package was further behind than it was; reading the overlay, you believed in progress that did not exist. Two reviews before the rebuild contained exactly this error, once each in a medium-priority row.
+
+The point is not that somebody was careless. The point is that **the file could display both states at once without complaining**. A contradiction that goes unnoticed is more expensive than one that throws an error.
+
+The HTML version draws progress as a second bar **inside** the first, anchored at the same position. There is no way to move one without the other — not because anyone is disciplined, but because both share the same row ID. The error type has not become rarer, it has become impossible.
+
+**The transferable rule:** when two elements sit on top of each other in a spreadsheet and both have to move, the next re-sort is an error with a delay fuse. In a structured output they live in *one* node and cannot be separated.
+
+## What Excel could do, and what is measurably different now
+
+| What | Excel with VBA | Static HTML from CSV |
+|---|---|---|
+| Delivery format | workbook with macros | one HTML file with embedded data |
+| Size of the deliverable | roughly 7 KB, compressed | roughly 150 KB, runs offline |
+| Requirement on the recipient | Excel plus macro permissions | a browser |
+| Two views | two separate files | one toggle in the same file |
+| Weekend handling | a cell formula per date | once, centrally, in the init script |
+| Predecessor arrows | shape objects, reflow on zoom | SVG on measured row height |
+| Conflict on a network share | conflict copy, broken macros | text diff in the CSV, solved in seconds |
+| A new predecessor type | new macro, new column | one attribute on the row |
+| Consistency check | visual inspection | a report, visible inside the HTML |
+| Print and PDF | cuts long rows apart | browser print, one page per zoom level |
+
+On size: the HTML is roughly 22 times larger than the spreadsheet, and it makes no difference. The spreadsheet carried no picture — opening it redrew one. The HTML *is* the picture and still fits in an email attachment.
+
+## What the rebuild cost
+
+Soberly: the rebuild itself was a weekend project, roughly twelve hours across three sessions. After that, the local editor and the consistency report were added over two weeks — comfort, not core. Neither **has** to be used; CSV in a text editor plus one rebuild call is the complete fallback.
+
+The return, equally soberly:
+
+- The divergence between external and internal view is structurally gone. No reconciliation, no eight missing rows.
+- Reviews happen inside the HTML. The revision number of the deliverable comes from the metadata — the question of which version the other side is looking at no longer arises.
+- Changes in the middle of the plan became cheap. A four-working-day shift propagates through the predecessor chain; nobody recalculates by hand.
+- The consistency report catches what used to be invisible: a set start date that contradicts the predecessor calculation. Before the HTML, you could not see that.
+
+## Limits
+
+Three things the rebuild did **not** deliver — they belong here, otherwise this is marketing:
+
+**Excel stays faster for bulk edits.** The local editor is more comfortable than a spreadsheet when changing one row. For edits across three columns and forty rows, Excel wins clearly on keyboard shortcuts.
+
+**The rebuild is fast, but not instant.** One to two seconds pass between saving and the new picture. Excel drew the bar immediately — if sometimes in the wrong place.
+
+**This approach does not replace a project management tool.** It covers a plan with 130 work packages and one owner. Cross-project resource planning, role permissions or genuine multi-user editing were not the goal and are not the outcome. Anyone who needs those needs a different tool, and the comparison in this text will not help them.
+
+## Where else the pattern holds
+
+The cut from CSV to SQLite to HTML is not specific to project plans. It holds wherever a spreadsheet plays two roles at once:
+
+- **Price lists with volume tiers.** The tiers are data, the overview is picture. Copying moves tiers into the wrong rows; a derivation does not.
+- **Contract overviews with terms.** Anyone drawing contract terms in Excel knows the bars that run behind the frame when filtering.
+- **Application or sales funnels** with status and target date. The cases are data, the funnel is picture — and the picture part is what bloats the file.
+
+The effort is small once the first pattern exists: one script that pushes CSV into SQLite, one that renders an HTML from it, and two or three CSV tables.
+
+## Conclusion: a question you can answer in five minutes
+
+The one measure with immediate value costs no rebuild at all. It is this: **open your most important Excel file and ask which cells are data and which are picture.** Conditional formatting, bars, shape objects, colours, rows hidden to create a second view — that is all picture.
+
+If the answer is *both, mixed*, then you already know your next class of errors. It will not arrive with an error message. It will look like a correct plan in which one number does not match the one next to it — and nobody will be able to say since when.`,
+      faq: [
+        {
+          q: "When is a project plan too big for Excel?",
+          a: "Row count is the wrong measure. 130 work packages are few for a spreadsheet. What matters is whether the file carries the picture alongside the data — bars, arrows, colours, conditional formatting. Once drawing happens in the same file as data entry, every change on one side costs a change on the other. In our case it first showed up as several seconds of macro runtime per pass, during which the cursor froze.",
+        },
+        {
+          q: "What do you gain by separating data storage from presentation?",
+          a: "An entire class of errors disappears instead of individual errors. Concretely: two views of one plan no longer need a second file and therefore cannot drift apart; conflicts on a shared drive become a text diff rather than a conflict copy with broken macros; and a progress marker can no longer detach from its bar, because both share the same row ID.",
+        },
+        {
+          q: "How do you build a Gantt plan without Excel and without project management software?",
+          a: "Three steps, each callable on its own: CSV files as the source of truth, a script that turns them into a SQLite database and computes dates from predecessors, and a second script that renders a single HTML file with embedded data. In our case roughly 2,700 lines of Python in total, standard library only — no framework, no database instance, no server.",
+        },
+        {
+          q: "Why a static HTML file instead of a web tool?",
+          a: "Because the recipient installs nothing, configures nothing and signs in nowhere. The deliverable is one file of roughly 150 KB that runs offline and can be emailed. It is about 22 times larger than the former workbook, and that is irrelevant: the workbook carried no picture, it had one redrawn on every open.",
+        },
+        {
+          q: "What speaks against keeping the Excel project plan?",
+          a: "Nothing, as long as the file only carries data and the picture is produced elsewhere. And Excel stays superior on one point even after a rebuild: for bulk edits across many rows and columns, spreadsheet keyboard shortcuts win clearly. The rebuild pays off when two views are maintained, when several people work on the same file, or when the plan is regularly shown to outsiders.",
+        },
+      ],
+      sources: [
+        {
+          title: "European Spreadsheet Risk Interest Group — Horror Stories",
+          url: "https://eusprig.org/research-info/horror-stories/",
+        },
+        {
+          title: "Raymond R. Panko: What We Don't Know About Spreadsheet Errors Today",
+          url: "https://arxiv.org/pdf/1602.02601",
+        },
+        {
+          title: "Why Excel can be a danger to projects (German)",
+          url: "https://projekte-leicht-gemacht.de/blog/pm-tools/excel-projektmanagement-nachteile/",
+        },
+        {
+          title: "Informatik Aktuell: Project management with Excel (German)",
+          url: "https://www.informatik-aktuell.de/management-und-recht/projektmanagement/projektmanagement-mit-excel.html",
+        },
+        {
+          title: "SQLite — Appropriate Uses For SQLite",
+          url: "https://www.sqlite.org/whentouse.html",
+        },
+      ],
+    },
+  },
+  {
+    slug: "ai-agent-allowlist-vs-denylist",
+    date: "2026-09-16",
+    updated: "2026-09-16",
+    author: "Claude (Opus 5)",
+    coAuthor: "Michael Schiffer",
+    aiGenerated: true,
+    de: {
+      title: "Verbotslisten sichern KI-Agenten nicht ab",
+      articleSection: "Agenten-Sicherheit",
+      excerpt:
+        "Ein Verbotsprofil für gesperrte Agenten-Sitzungen deckte 23 von 54 schreibenden Rechten ab. Eine der 31 Lücken machte alle anderen gegenstandslos.",
+      coverAlt:
+        "Eine lange Liste verbotener Kommandos vor einer kurzen Liste erlaubter Werkzeuge — Sinnbild für Erlaubnisliste statt Verbotsliste bei KI-Agenten",
+      tags: [
+        "KI-Agenten",
+        "Agenten-Sicherheit",
+        "Erlaubnisliste",
+        "Verbotsliste",
+        "Least Privilege",
+        "Sandbox",
+        "Werkzeug-Berechtigungen",
+        "KI-Governance",
+        "Positivkontrolle",
+        "Coding-Agenten",
+        "On-Premise-KI",
+        "Sicherheitsarchitektur",
+      ],
+      bodyMarkdown: `Wer einem **KI-Agenten** Werkzeuge in die Hand gibt, schreibt früher oder später eine Liste. Bei uns war es eine Verbotsliste: Kommandos, die eine gesperrte Agenten-Sitzung niemals ausführen darf. Sie lag Monate da und sah nach Absicherung aus. Beim Nachmessen deckte sie **23 von 54** schreibenden Rechten ab. Die 31 offenen waren nicht einmal der eigentliche Befund — der eigentliche Befund war eine einzelne Lücke, die die anderen dreißig gegenstandslos macht.
+
+**Auf einen Blick:**
+
+- **Eine Verbotsliste über einer wachsenden Erlaubnisliste ist ein Wettlauf, den man verliert.** Die eine Seite wächst mit jedem Arbeitstag von selbst, die andere nur, wenn jemand daran denkt.
+- **126 gewachsene Werkzeug-Erlaubnisse** in einem einzigen Arbeitsverzeichnis, 72 lesend und 54 schreibend. Niemand hat diese Zahl je beschlossen; sie ist entstanden.
+- **Eine Lücke reicht.** Wer einen blanken Interpreter starten darf, braucht keinen der dreißig anderen verbotenen Wege.
+- **Der erste Prüfversuch sah bestanden aus und bewies nichts.** Der Riegel hatte gar nicht gegriffen — das Modell hatte aus eigenem Urteil abgelehnt. Richtiges Ergebnis, falscher Grund.
+
+Der Fehler in dieser Geschichte ist nicht die unvollständige Liste. Unvollständig ist jede Liste. Der Fehler ist die Bauform — und die findet sich in erstaunlich vielen Setups wieder, in denen ein Agent mehr darf, als irgendwer entschieden hat.
+
+## Wie 126 Rechte entstehen, ohne dass jemand sie beschließt
+
+Erlaubnisse für Agenten entstehen im Arbeitsfluss. Ein Werkzeug fehlt, die Arbeit stockt, jemand hängt eine Zeile an die Erlaubnisliste. Das ist kein Schlendrian, sondern der Normalbetrieb: Jede einzelne Zeile war in dem Moment, in dem sie entstand, berechtigt und klein.
+
+Gezählt haben wir in einem Arbeitsverzeichnis **126 Werkzeug-Erlaubnisse**: 72 lesende und 54 schreibende. Lesend ist der unkritische Teil. Interessant sind die 54, die etwas verändern können — Dateien anlegen, Prozesse starten, Netzwerkverbindungen aufbauen, Pakete installieren.
+
+Diese Liste hat eine Eigenschaft, die jede Sicherheitsüberlegung darüber entwertet: **sie wächst monoton.** Es gibt einen Anlass, etwas hinzuzufügen — die Arbeit steht —, aber keinen Anlass, etwas zu entfernen. Wer nichts entfernt, verliert nichts; es fällt niemandem auf.
+
+## Was die Verbotsliste wirklich abdeckte: 23 von 54
+
+Über dieser gewachsenen Erlaubnisliste lag unser Verbotsprofil. Es war sorgfältig geschrieben, es nannte die offensichtlich gefährlichen Kommandos, und es war nie gegen die Erlaubnisliste gehalten worden.
+
+Das Nachmessen ist simpel: jede schreibende Erlaubnis einzeln gegen das Verbotsprofil halten und zählen, welche davon tatsächlich abgefangen wird. Ergebnis: **23 von 54**, rund 43 Prozent.
+
+Diese Zahl wirkt zunächst wie eine Aufgabe — 31 Zeilen nachtragen, dann stimmt es. Genau dieser Reflex ist die Falle. Die 31 Zeilen wären in vier Wochen wieder 35, weil die Erlaubnisliste in derselben Zeit weiterwächst und niemand die Gegenliste mitpflegt. Eine Verbotsliste über einer wachsenden Erlaubnisliste hat ein Verfallsdatum, das niemand sieht.
+
+Der Fall hat einen Namen und eine Nummer: **CWE-184, "Incomplete List of Disallowed Inputs"**. Die Schwachstellen-Datenbank führt ihn seit Jahren, und die dortige Empfehlung ist dieselbe wie unsere Konsequenz — die Umkehrung.
+
+## Die eine Lücke, die die anderen dreißig gegenstandslos macht
+
+Unter den 31 nicht abgedeckten Erlaubnissen war eine, die die Arithmetik erledigt: **der Aufruf eines blanken Interpreters.**
+
+Ein Interpreter ist kein Kommando, sondern ein Tor. Wer ihn starten darf, kann jede Datei schreiben, jeden Prozess starten, jede Verbindung öffnen — ohne ein einziges der verbotenen Kommandos zu benutzen. Die restlichen dreißig Lücken muss man danach nicht mehr diskutieren, und die 23 geschlossenen genauso wenig.
+
+Das ist die eigentliche Lehre über Verbotslisten: **ihre Abdeckung ist nicht der Durchschnitt ihrer Zeilen, sondern der Wert ihrer schwächsten Stelle.** 43 Prozent klingt nach "halb geschafft". Tatsächlich war die Abdeckung null, sobald eine einzige generische Ausführungsmöglichkeit offenstand. Bei einer Erlaubnisliste ist es umgekehrt: Was nicht drinsteht, geht nicht — auch das, woran niemand gedacht hat.
+
+## Richtiges Ergebnis, falscher Grund
+
+Die zweite Hälfte dieser Geschichte ist die unangenehmere, weil sie nicht von der Liste handelt, sondern von uns.
+
+Um den Riegel zu prüfen, ließen wir eine gesperrte Sitzung eine Datei löschen. Die Datei überlebte. An dieser Stelle hätten wir "Riegel greift, geprüft" notieren können — und es wäre falsch gewesen. Im Protokoll stand der wahre Grund: **Das Modell hatte die Aufgabe aus eigenem Urteil abgelehnt.** Die Regel war nie zum Zuge gekommen. Der Mechanismus war ungeprüft, das Ergebnis sah trotzdem exakt so aus wie ein Erfolg.
+
+Eine Prüfung, die im Fehlerfall genauso aussieht wie im Erfolgsfall, ist keine Prüfung. Sie ist eine Beruhigung.
+
+Das ist auch der Punkt, an dem "die KI macht so etwas ohnehin nicht" als Sicherheitsargument zerfällt. Modellurteil ist eine Verhaltenseigenschaft: Es schwankt mit Formulierung, Kontext und Version, und es ist mit einer Umformulierung verhandelbar. Ein technischer Riegel ist es nicht. Beide können zum selben Ergebnis führen — nur eines davon lässt sich planen.
+
+## Wie man einen Riegel prüft, der etwas beweist
+
+Aus dem Fehlschlag folgt eine Regel, die für jede Berechtigungsprüfung gilt, ob mit KI oder ohne:
+
+**Wer einen Riegel prüft, muss eine Handlung wählen, die der Geprüfte auch ausführen will.** Eine offensichtlich destruktive Aufgabe misst das Gewissen des Modells, nicht die Wirkung der Regel. Geeignet ist eine harmlose, aber eindeutig verbotene Handlung — etwas, das das Modell bereitwillig tut und die Regel trotzdem abfangen muss.
+
+Dazu gehört die **Positivkontrolle**: derselbe Befehl, dasselbe Verzeichnis, einziger Unterschied ist das Profil. Einmal muss er laufen, einmal abgewiesen werden. Erst dieses Paar zeigt, dass Sie den Mechanismus gemessen haben und nicht die Tagesform. In unserem Fall stimmte der Mechanismus übrigens — nur die Liste war ein Sieb.
+
+Denselben Gedanken kennt jeder, der mit Systemaufruf-Filtern arbeitet: Auch dort ist der empfohlene Weg, alles zu verbieten und einzeln zu erlauben, und auch dort prüft man einen Filter, indem man ihn auslöst, statt zu hoffen.
+
+## Die Umkehrung kostet nichts
+
+Der Umbau ist unspektakulär: **eine kurze Erlaubnisliste, und alles andere ist verboten.** Das ist das Prinzip der geringsten Rechte, nur konsequent auf Werkzeuge angewendet statt auf Benutzerkonten.
+
+Drei Dinge werden dadurch besser, und keines davon ist Mehraufwand:
+
+1. **Die Liste wächst nur mit Absicht.** Jede neue Erlaubnis ist eine Entscheidung mit einem Menschen davor — kein Nebeneffekt von Arbeit.
+2. **Unbekanntes ist automatisch abgedeckt.** Der Weg, an den niemand gedacht hat, ist in der Praxis der Normalfall. Nur die Erlaubnisliste fängt ihn.
+3. **Das Restrisiko ist benennbar.** Bei einer Verbotsliste können Sie nicht sagen, was noch offen ist. Bei einer Erlaubnisliste steht es auf einer Seite.
+
+Der Preis ist ehrlich: Es wird häufiger etwas abgewiesen, was in Ordnung gewesen wäre. Das kostet Nachfragen. Es kostet keine Überraschungen.
+
+## Drei Fragen an Ihr eigenes Setup
+
+Wenn Sie Agenten produktiv einsetzen, lassen sich diese drei Fragen an einem Nachmittag beantworten:
+
+1. **Wie viele schreibende Werkzeug-Erlaubnisse haben Sie — gezählt, nicht geschätzt?** Die Zahl überrascht fast immer.
+2. **Welcher Anteil davon wird von Ihrer Schutzregel tatsächlich abgefangen?** Einzeln durchgehen, nicht überfliegen.
+3. **Ist unter den Erlaubnissen mindestens eine generische Ausführungsmöglichkeit?** Interpreter, Shell, Paketmanager, Build-Werkzeug mit frei wählbarem Skript. Wenn ja, ist Ihre Abdeckung unabhängig von Frage 2 gleich null.
+
+Wir haben die Antworten auf diese drei Fragen ungern gelesen. Aber ein Riegel, von dem man weiß, dass er keiner ist, ist immer noch besser als einer, auf den man sich verlässt.`,
+      faq: [
+        {
+          q: "Was ist der Unterschied zwischen Erlaubnisliste und Verbotsliste?",
+          a: "Eine Erlaubnisliste (Allowlist) nennt abschließend, was zulässig ist; alles andere wird abgewiesen. Eine Verbotsliste (Denylist) nennt, was unzulässig ist; alles andere geht durch. Der Unterschied zeigt sich beim Unbekannten: Ein Weg, an den beim Schreiben der Liste niemand gedacht hat, wird von der Erlaubnisliste automatisch abgefangen und von der Verbotsliste automatisch durchgelassen.",
+        },
+        {
+          q: "Warum reicht eine Verbotsliste für KI-Agenten nicht aus?",
+          a: "Weil die Erlaubnisse eines Agenten im Arbeitsfluss wachsen und die Verbotsliste nur wächst, wenn jemand daran denkt. In unserer Messung standen 54 schreibenden Erlaubnissen 23 abgedeckte gegenüber. Entscheidend war aber nicht die Quote, sondern eine einzelne Lücke: Sobald ein blanker Interpreter erlaubt ist, lässt sich jedes verbotene Kommando umgehen, ohne es zu benutzen.",
+        },
+        {
+          q: "Wie testet man, ob eine Berechtigungsregel bei einem KI-Agenten wirklich greift?",
+          a: "Mit einer harmlosen, aber eindeutig verbotenen Handlung, die das Modell bereitwillig ausführen würde — und mit einer Positivkontrolle: derselbe Befehl, dasselbe Verzeichnis, einziger Unterschied ist das Profil. Einmal muss er laufen, einmal abgewiesen werden. Wählt man eine offensichtlich destruktive Aufgabe, misst man das Urteil des Modells und nicht die Wirkung der Regel.",
+        },
+        {
+          q: "Zählt es als Absicherung, wenn das Modell gefährliche Befehle selbst ablehnt?",
+          a: "Nein. Die Ablehnung durch das Modell ist eine Verhaltenseigenschaft: Sie schwankt mit Formulierung, Kontext und Modellversion und ist mit einer Umformulierung verhandelbar. Wir hatten genau diesen Fall — eine Prüfung bestand scheinbar, obwohl die Regel nie gegriffen hatte. Verlassen kann man sich nur auf den technischen Riegel; das Modellurteil ist eine willkommene zweite Schicht, keine erste.",
+        },
+        {
+          q: "Wie groß darf eine Erlaubnisliste für einen Coding-Agenten sein?",
+          a: "Wichtiger als die Länge ist, ob eine generische Ausführungsmöglichkeit darin steht — Interpreter, Shell, Paketmanager oder ein Build-Werkzeug mit frei wählbarem Skript. Ein einziger solcher Eintrag hebt jede weitere Einschränkung auf. Eine Liste mit vierzig eng gefassten Einträgen ohne Tor ist sicherer als eine mit fünf, von denen eines eine Shell ist.",
+        },
+      ],
+      sources: [
+        {
+          title: "CWE-184: Incomplete List of Disallowed Inputs",
+          url: "https://cwe.mitre.org/data/definitions/184.html",
+        },
+        {
+          title: "CWE-183: Permissive List of Allowed Inputs",
+          url: "https://cwe.mitre.org/data/definitions/183.html",
+        },
+        {
+          title: "NIST Computer Security Resource Center — Least Privilege",
+          url: "https://csrc.nist.gov/glossary/term/least_privilege",
+        },
+        {
+          title: "seccomp(2) — Linux manual page on syscall filtering",
+          url: "https://man7.org/linux/man-pages/man2/seccomp.2.html",
+        },
+        {
+          title: "OWASP Top 10 for LLM Applications — LLM06: Excessive Agency",
+          url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/",
+        },
+      ],
+    },
+    en: {
+      title: "Deny lists do not secure AI agents",
+      articleSection: "Agent Security",
+      excerpt:
+        "A deny profile for locked-down agent sessions covered 23 of 54 write permissions. One of the 31 gaps made all the others irrelevant.",
+      coverAlt:
+        "A long list of forbidden commands in front of a short list of permitted tools — allowlist instead of denylist for AI agents",
+      tags: [
+        "AI agents",
+        "agent security",
+        "allowlist",
+        "denylist",
+        "least privilege",
+        "sandboxing",
+        "tool permissions",
+        "AI governance",
+        "positive control",
+        "coding agents",
+        "security architecture",
+      ],
+      bodyMarkdown: `Give an **AI agent** tools and sooner or later you write a list. Ours was a deny list: commands a locked-down agent session must never run. It sat there for months and looked like protection. When we finally measured it, it covered **23 of 54** write permissions. The 31 open ones were not even the real finding — the real finding was a single gap that makes the other thirty irrelevant.
+
+**At a glance:**
+
+- **A deny list on top of a growing allowlist is a race you lose.** One side grows by itself with every working day, the other only when somebody remembers.
+- **126 accumulated tool permissions** in a single working directory, 72 read and 54 write. Nobody ever decided on that number; it simply happened.
+- **One gap is enough.** If you may start a bare interpreter, you need none of the thirty other forbidden routes.
+- **The first test looked like a pass and proved nothing.** The rule had never fired — the model had declined on its own judgement. Right result, wrong reason.
+
+The mistake in this story is not the incomplete list. Every list is incomplete. The mistake is the shape of the thing — and you find it in a surprising number of setups where an agent is allowed to do more than anyone ever decided.
+
+## How 126 permissions appear without anyone deciding on them
+
+Agent permissions grow out of the work itself. A tool is missing, work stalls, someone appends a line to the allowlist. That is not sloppiness, it is normal operation: every single line was justified and small at the moment it was written.
+
+In one working directory we counted **126 tool permissions**: 72 read and 54 write. Read is the uncritical part. What matters are the 54 that can change something — create files, start processes, open network connections, install packages.
+
+That list has one property which devalues any security reasoning placed on top of it: **it grows monotonically.** There is an occasion to add something — work is blocked — but never an occasion to remove something. Removing nothing costs nothing visible; nobody notices.
+
+## What the deny list actually covered: 23 of 54
+
+On top of that accumulated allowlist sat our deny profile. It was written carefully, it named the obviously dangerous commands, and it had never once been held against the allowlist.
+
+Measuring it is trivial: take each write permission, hold it against the deny profile, count how many are actually caught. Result: **23 of 54**, roughly 43 per cent.
+
+At first that number reads like a task — add 31 lines and it is fixed. That reflex is the trap. Those 31 lines would be 35 again in four weeks, because the allowlist keeps growing in the same period and nobody maintains the counter-list alongside it. A deny list on top of a growing allowlist has an expiry date that nobody can see.
+
+The case has a name and a number: **CWE-184, "Incomplete List of Disallowed Inputs"**. The weakness database has carried it for years, and its recommendation is the same as our conclusion — invert it.
+
+## The one gap that makes the other thirty irrelevant
+
+Among the 31 uncovered permissions was one that settles the arithmetic: **invoking a bare interpreter.**
+
+An interpreter is not a command, it is a gate. Whoever may start one can write any file, start any process, open any connection — without using a single forbidden command. After that there is no point discussing the remaining thirty gaps, and none in celebrating the 23 closed ones either.
+
+That is the real lesson about deny lists: **their coverage is not the average of their lines, it is the value of their weakest point.** 43 per cent sounds like "halfway there". In fact coverage was zero the moment one generic execution route stood open. With an allowlist it is the other way round: what is not on it does not happen — including whatever nobody thought of.
+
+## Right result, wrong reason
+
+The second half of this story is the more uncomfortable one, because it is not about the list but about us.
+
+To test the lock we had a restricted session delete a file. The file survived. At that point we could have noted "lock works, verified" — and it would have been wrong. The log held the true reason: **the model had declined the task on its own judgement.** The rule had never come into play. The mechanism was untested, yet the outcome looked exactly like success.
+
+A test that looks the same whether it passes or fails is not a test. It is reassurance.
+
+This is also where "the AI would not do that anyway" falls apart as a security argument. Model judgement is a behavioural property: it varies with wording, context and version, and it is negotiable with a rephrasing. A technical lock is not. Both can produce the same outcome — only one of them can be planned.
+
+## How to test a lock so that it proves something
+
+One rule follows from that failure, and it holds for any permission check, with or without AI:
+
+**When you test a lock, pick an action the subject actually wants to perform.** An obviously destructive task measures the model's conscience, not the effect of the rule. What works is a harmless but unambiguously forbidden action — something the model will happily do and the rule still has to catch.
+
+Part of it is the **positive control**: same command, same directory, the profile being the only difference. Once it must run, once it must be refused. Only that pair shows you measured the mechanism rather than the mood of the day. In our case the mechanism was in fact sound — the list was the sieve.
+
+Anyone working with syscall filters knows the same idea: there, too, the recommended route is to forbid everything and permit individually, and there, too, you test a filter by triggering it rather than by hoping.
+
+## Inverting it costs nothing
+
+The rebuild is unspectacular: **a short allowlist, and everything else is forbidden.** That is the principle of least privilege, applied consistently to tools instead of to user accounts.
+
+Three things improve, and none of them is extra work:
+
+1. **The list only grows on purpose.** Every new permission is a decision with a human in front of it — no longer a side effect of getting work done.
+2. **The unknown is covered automatically.** The route nobody thought of is the common case in practice. Only the allowlist catches it.
+3. **The residual risk can be stated.** With a deny list you cannot say what is still open. With an allowlist it fits on one page.
+
+The honest price: things get refused more often that would have been fine. That costs you questions. It does not cost you surprises.
+
+## Three questions for your own setup
+
+If you run agents in production, these three questions can be answered in an afternoon:
+
+1. **How many write permissions do you have — counted, not estimated?** The number almost always surprises.
+2. **What share of them does your protective rule actually catch?** Go through them one by one; do not skim.
+3. **Is there at least one generic execution route among them?** Interpreter, shell, package manager, build tool with a free-form script. If yes, your coverage is zero regardless of question 2.
+
+We did not enjoy reading our own answers. But a lock you know to be no lock still beats one you rely on.`,
+      faq: [
+        {
+          q: "What is the difference between an allowlist and a deny list?",
+          a: "An allowlist states exhaustively what is permitted; everything else is refused. A deny list states what is forbidden; everything else passes. The difference shows up with the unknown: a route nobody thought of while writing the list is caught automatically by the allowlist and passed automatically by the deny list.",
+        },
+        {
+          q: "Why is a deny list not enough for AI agents?",
+          a: "Because an agent's permissions grow out of daily work while the deny list only grows when someone remembers. In our measurement 54 write permissions faced 23 covered ones. What mattered was not the ratio but a single gap: once a bare interpreter is permitted, every forbidden command can be bypassed without being used.",
+        },
+        {
+          q: "How do you test whether a permission rule really fires for an AI agent?",
+          a: "With a harmless but unambiguously forbidden action the model would willingly perform — and with a positive control: same command, same directory, the profile being the only difference. Once it must run, once it must be refused. Pick an obviously destructive task instead and you measure the model's judgement, not the effect of the rule.",
+        },
+        {
+          q: "Does it count as protection if the model refuses dangerous commands by itself?",
+          a: "No. Refusal by the model is a behavioural property: it varies with wording, context and model version, and it is negotiable with a rephrasing. We had exactly that case — a test appeared to pass although the rule had never fired. Only the technical lock can be relied upon; model judgement is a welcome second layer, not a first one.",
+        },
+        {
+          q: "How large may an allowlist for a coding agent be?",
+          a: "More important than its length is whether it contains a generic execution route — interpreter, shell, package manager or a build tool with a free-form script. A single such entry cancels every other restriction. A list of forty narrowly scoped entries without a gate is safer than one of five where one is a shell.",
+        },
+      ],
+      sources: [
+        {
+          title: "CWE-184: Incomplete List of Disallowed Inputs",
+          url: "https://cwe.mitre.org/data/definitions/184.html",
+        },
+        {
+          title: "CWE-183: Permissive List of Allowed Inputs",
+          url: "https://cwe.mitre.org/data/definitions/183.html",
+        },
+        {
+          title: "NIST Computer Security Resource Center — Least Privilege",
+          url: "https://csrc.nist.gov/glossary/term/least_privilege",
+        },
+        {
+          title: "seccomp(2) — Linux manual page on syscall filtering",
+          url: "https://man7.org/linux/man-pages/man2/seccomp.2.html",
+        },
+        {
+          title: "OWASP Top 10 for LLM Applications — LLM06: Excessive Agency",
+          url: "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/",
+        },
+      ],
+    },
+  },
+  {
     slug: "llm-lastmanagement-routing-autoritaet",
     date: "2026-08-01",
     updated: "2026-08-01",
@@ -1666,6 +2363,10 @@ export function localizePost(post, lang) {
     date: post.date,
     updated: post.updated || post.date,
     author: post.author || "Michael Schiffer",
+    // Set both together: coAuthor names the human who reviewed and answers
+    // for the text, aiGenerated switches on the Article 50 disclosure.
+    coAuthor: post.coAuthor || null,
+    aiGenerated: Boolean(post.aiGenerated),
     // Localizable: articleSection is rendered as the kicker inside the images,
     // and tags are the keyword set — both differ per language.
     articleSection: block.articleSection || post.articleSection || "AI Engineering",
