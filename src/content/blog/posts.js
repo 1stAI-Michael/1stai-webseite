@@ -74,7 +74,7 @@ Die Einzelheit, die den Fall zum Lehrstück macht: \`ln -sfn\` legt einen Link *
 
 Das ist der Satz, den wir am häufigsten gebraucht haben, und er beschreibt einen Konstruktionsfehler, der sich unauffällig in fast jede selbst gebaute Kontrolle einschleicht. Drei Fälle, alle gemessen.
 
-**Die Kanarie, die im Fehlerfall grün ist.** Zentrale Regeln werden per Import in die Konfiguration der Agenten geladen, und als Beweis, dass der Import funktioniert, steht eine sichtbare Markerzeile darin. Ein Import war **zwei Wochen tot**: Eine Import-Zeile, die auf eine fehlende Datei zeigt, wird still übersprungen. Der Marker stand trotzdem da — eine andere Schicht lud dieselbe Datei und brachte ihn mit. Daraus wurde die Regel: Ein Marker beweist nur den Import, den **ausschließlich diese eine Zeile** liefert.
+**Die Kanarie, die im Fehlerfall grün ist.** Eine Kanarie ist der Vogel, den Bergleute mit unter Tage nahmen: ein kleiner, billiger Anzeiger, der **vor** dem Menschen und **sichtbar** ausfällt. In Software ist es dasselbe Prinzip — eine winzige Prüfung, die mitläuft und laut wird, bevor das Große kippt. Wer eine einbaut, verlässt sich darauf, dass ihr Schweigen etwas bedeutet. Bei uns werden zentrale Regeln per Import in die Konfiguration der Agenten geladen, und die Kanarie ist eine sichtbare Markerzeile darin. Ein Import war **zwei Wochen tot**: Eine Import-Zeile, die auf eine fehlende Datei zeigt, wird still übersprungen. Der Marker stand trotzdem da — eine andere Schicht lud dieselbe Datei und brachte ihn mit. Daraus wurde die Regel: Ein Marker beweist nur den Import, den **ausschließlich diese eine Zeile** liefert.
 
 **Der Test, der das Falsche zählt.** Für den Arbeitsplatz sollten Terminal-Reiter gezielt in bestimmte Fenster einsortiert werden. Gegengeprüft wurde zuerst mit „Fensterzahl plus eins", und die Sache galt als gelöst. Der Test taugt nichts: Er zeigt, dass ein Fenster entstanden ist, nicht wohin der Reiter ging — beide Fälle ergeben dieselbe Zahl. Die Messung, die es dann zeigte:
 
@@ -151,11 +151,11 @@ An einem Morgen trug die Warteschlange des Menschen **16 Einträge**; nach ander
 3. **Die Sperre trägt eine andere Frage als die, für die sie gesetzt wurde.** Wer nur die Liste liest, stellt die alte Frage.
 4. **Die Antwort steht schon im Verlauf, es fehlt nur ein Befehl.** Zwei Vorgänge warteten tagelang auf je eine einzige Messzeile.
 
-Dieselbe Ungleichverteilung zeigt sich, wenn man die offene Last je Agent aufträgt statt sie zu schätzen:
+Dieselbe Ungleichverteilung zeigt sich, wenn man die offene Last je Beteiligtem aufträgt statt sie zu schätzen — den Menschen ausdrücklich mitgezählt:
 
-![Offene Last je Agent, 22.09.2026: 29 Agenten, 366 Punkte — zehn davon tragen zusammen 80 Prozent. Die Verteilung stammt aus der eigenen Auswertung, die Namen sind durch Platzhalter ersetzt.](/blog/agenten-stille-sieht-aus-wie-erfolg/figures/de/pareto.png)
+![Offene Last je Beteiligtem, 22.09.2026: 28 Agenten und ein Mensch, 366 Punkte — zehn davon tragen zusammen 80 Prozent, und der Mensch steht auf Platz zwei. Die Verteilung stammt aus der eigenen Auswertung, die Namen sind durch Platzhalter ersetzt.](/blog/agenten-stille-sieht-aus-wie-erfolg/figures/de/pareto.png)
 
-**29 Agenten, 366 Punkte, und zehn davon tragen 80 Prozent.** Die anderen neunzehn sind nicht untätig — sie sind still, und Stille ist hier kein Erfolgsnachweis, sondern eine offene Frage. Ohne diese Auswertung hätte niemand sagen können, wo die Last wirklich liegt; der Eindruck im Alltag folgt dem, wer am lautesten schreibt.
+**29 Beteiligte, 366 Punkte, und zehn davon tragen 80 Prozent — auf Platz zwei steht der Mensch.** Das ist der Beleg für die Überschrift dieses Abschnitts, und er war uns selbst nicht bewusst, bevor wir es aufgetragen haben: Der Mensch ist nicht Engpass, weil er zu langsam entscheidet, sondern weil nach den Agenten tatsächlich auf ihm die zweitgrößte offene Last liegt. Die anderen neunzehn Agenten sind nicht untätig — sie sind still, und Stille ist hier kein Erfolgsnachweis, sondern eine offene Frage. Ohne diese Auswertung hätte niemand sagen können, wo die Last wirklich liegt; der Eindruck im Alltag folgt dem, wer am lautesten schreibt.
 
 Aus den vier Mustern ist eine eigene Rolle geworden: eine Sitzung, die täglich gegenliest, **bevor** der Mensch die Liste sieht. Sie legt vor, sie entscheidet nicht, und sie löst keine Sperre, die sie nicht belegen kann. Der Grund steht in einem Satz, der die Grenze dieser Idee markiert: *Eine aufgeräumte Warteschlange, in der eine echte Frage verschwunden ist, ist schlimmer als eine lange.*
 
@@ -273,7 +273,7 @@ The detail that makes this a teaching case: \`ln -sfn\` will create a link **eve
 
 This is the sentence we used most often, and it describes a design flaw that works its way quietly into almost every home-made control. Three cases, all measured.
 
-**The canary that is green when it fails.** Central rules are pulled into the agents' configuration via an import, and as proof that the import works, a visible marker line sits inside it. One import was **dead for two weeks**: an import line pointing at a missing file is silently skipped. The marker was there anyway — another layer loaded the same file and brought it along. Hence the rule: a marker only proves the import that **this one line alone** delivers.
+**The canary that is green when it fails.** A canary is the bird miners took underground with them: a small, cheap indicator that fails **before** the human does, and **visibly**. In software it is the same idea — a tiny check that runs along and gets loud before the big thing tips over. Anyone who installs one is relying on its silence meaning something. In our setup, central rules are pulled into the agents' configuration via an import, and the canary is a visible marker line inside it. One import was **dead for two weeks**: an import line pointing at a missing file is silently skipped. The marker was there anyway — another layer loaded the same file and brought it along. Hence the rule: a marker only proves the import that **this one line alone** delivers.
 
 **The test that counts the wrong thing.** For the workplace, terminal tabs were supposed to be sorted into specific windows. The first cross-check was "window count plus one", and the matter was considered solved. That test is worthless: it shows that a window was created, not where the tab went — both cases yield the same number. The measurement that did show it:
 
@@ -350,11 +350,11 @@ One morning the human's queue held **16 items**; an hour and a half later it hel
 3. **The block carries a different question than the one it was set for.** Read only the list, and you ask the old question.
 4. **The answer is already in the history, only a command is missing.** Two items waited for days on a single line of measurement each.
 
-The same uneven distribution shows up when you plot open load per agent instead of estimating it:
+The same uneven distribution shows up when you plot open load per participant instead of estimating it — with the human explicitly counted in:
 
-![Open load per agent, 22 September 2026: 29 agents, 366 points — ten of them carry 80 percent between them. The distribution is from our own board; the names are replaced with placeholders.](/blog/agenten-stille-sieht-aus-wie-erfolg/figures/en/pareto.png)
+![Open load per participant, 22 September 2026: 28 agents and one human, 366 points — ten of them carry 80 percent between them, and the human sits at rank two. The distribution is from our own board; the names are replaced with placeholders.](/blog/agenten-stille-sieht-aus-wie-erfolg/figures/en/pareto.png)
 
-**29 agents, 366 points, and ten of them carry 80 percent.** The other nineteen are not idle — they are silent, and silence here is not proof of success but an open question. Without this plot nobody could have said where the load actually sits; day to day, the impression follows whoever writes loudest.
+**29 participants, 366 points, and ten of them carry 80 percent — rank two is the human.** That is the evidence for this section's heading, and we did not see it ourselves until we plotted it: the human is not the bottleneck for deciding too slowly, but because after the agents the second-largest open load genuinely sits with him. The other nineteen agents are not idle — they are silent, and silence here is not proof of success but an open question. Without this plot nobody could have said where the load actually sits; day to day, the impression follows whoever writes loudest.
 
 Out of those four patterns grew a role of its own: a session that reads the queue every day **before** the human sees it. It presents, it does not decide, and it clears no block it cannot substantiate. The reason sits in one sentence that marks the limit of the idea: *a tidy queue with a real question missing from it is worse than a long one.*
 
