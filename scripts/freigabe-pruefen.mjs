@@ -63,7 +63,12 @@ for (const post of getAllPosts()) {
       fehlt.push(`${wo}: Akte ohne bestaetigtes Seitenende`);
       continue;
     }
-    zeilen.push(`  ✓ ${wo}: ${soll.slice(0, 8)} freigegeben ${akte.freigegeben}`);
+    const anzahl = Array.isArray(akte.notizen) ? akte.notizen.length : 0;
+    zeilen.push(
+      `  ✓ ${wo}: ${soll.slice(0, 8)} freigegeben ${akte.freigegeben}` +
+        ` · ${anzahl} Anmerkung(en)` +
+        (anzahl === 0 ? " — nur gescrollt, keine inhaltliche Spur" : "")
+    );
   }
 }
 
