@@ -105,7 +105,7 @@ Ziel ist nicht die Automatisierung der Entscheidung, sondern eine **belastbare, 
 Parallel zur regelbasierten Auswertung erfolgt eine objektive Zweitbewertung durch eine lokal betriebene GenAI.
 
 ### Eingesetztes Modell
-**MedGemma 7B** – ein medizinisch spezialisiertes Sprachmodell, abgeleitet aus der Gemma-Modellfamilie von Google DeepMind.
+**MedGemma 27B** – ein medizinisch spezialisiertes Sprachmodell, abgeleitet aus der Gemma-Modellfamilie von Google DeepMind.
 
 **Trainingsgrundlage (vereinfacht):**
 - medizinische Fachliteratur
@@ -286,7 +286,7 @@ The aim is not to automate the decision, but to provide a **robust, reproducible
 Alongside the rule-based evaluation, an objective second assessment is carried out by a locally operated GenAI.
 
 ### Model used
-**MedGemma 7B** — a medically specialised language model derived from Google DeepMind's Gemma model family.
+**MedGemma 27B** — a medically specialised language model derived from Google DeepMind's Gemma model family.
 
 **Training basis (simplified):**
 - medical literature
@@ -425,7 +425,7 @@ Not as a replacement for medical expertise, but as structured, objective support
         "Betrieb von KI-Agenten",
         "Fehlerklassen",
       ],
-      bodyMarkdown: `Bei uns arbeiten rund zwei Dutzend KI-Agenten parallel, jeder in einer eigenen Sitzung. Nach zwei Monaten Betrieb ist klar, welche Fehlerklasse die teuerste ist — und sie hat weder einen Namen noch eine Fehlermeldung: **Der Zustand „alles erledigt" und der Zustand „hier passiert seit Stunden nichts" sehen von außen identisch aus.** Eine Sitzung stand **634 Minuten** arbeitsbereit und galt dem Server zur selben Zeit als beendet. Sechs Zugangsdaten lagen einen Tag lang abholbereit, mit gültiger Berechtigung — abgerufen wurden sie **null Mal**, während gemeldet war, es gebe gar keinen Zugang. Beides fiel niemandem auf, weil nichts rot wurde.
+      bodyMarkdown: `Bei uns arbeiten gut zwei Dutzend KI-Agenten parallel, jeder in einer eigenen Sitzung. Nach zwei Monaten Betrieb ist klar, welche Fehlerklasse die teuerste ist — und sie hat weder einen Namen noch eine Fehlermeldung: **Der Zustand „alles erledigt" und der Zustand „hier passiert seit Stunden nichts" sehen von außen identisch aus.** Eine Sitzung stand **634 Minuten** arbeitsbereit und galt dem Server zur selben Zeit als beendet. Sechs Zugangsdaten lagen einen Tag lang abholbereit, mit gültiger Berechtigung — abgerufen wurden sie **null Mal**, während gemeldet war, es gebe gar keinen Zugang. Beides fiel niemandem auf, weil nichts rot wurde.
 
 **Auf einen Blick:**
 
@@ -473,7 +473,7 @@ Es gibt zwei Stellen, an denen sich ablesen ließe, ob ein Agent gerade auf eine
 
 **Der Server sieht Wartende nicht.** Bei **12 von 18** Sitzungen, die auf dem Bildschirm nachweislich bereit standen, hatte er keine Meinung dazu. Der Grund ist systematisch und nicht behebbar, indem man öfter fragt: Die Zustandsmeldung hängt an einem Ereignis-Haken, und **wer wartet, löst kein Ereignis aus**. Nach einer Viertelstunde ohne Meldung gilt eine Sitzung als stumm. So kam die Zahl zustande, die dem Beitrag den Titel hätte geben können: Eine Sitzung stand **634 Minuten** bereit und war auf dem Server als beendet geführt.
 
-**Der Bildschirm zeigt nicht alles, was passiert ist.** Der Auswahlkasten, mit dem ein Agent eine Rückfrage stellt, klebt unten am Bildschirm und rollt nicht mit. Im **4 MB großen Mitschnitt** derselben Sitzung kam seine Fußzeile **kein einziges Mal** vor — eine Überwachung, die den Mitschnitt liest, sieht diese Frage nie. Umgekehrt rollt gewöhnlicher Gesprächstext nach oben weg: Ein Hilferuf stand **null Mal auf dem Bildschirm und sechs Mal im Verlauf**. Sechs Rufe, kein Alarm.
+**Der Bildschirm zeigt nicht alles, was passiert ist.** Der Auswahlkasten, mit dem ein Agent eine Rückfrage stellt, klebt unten am Bildschirm und rollt nicht mit. Im **4 MB großen Mitschnitt** derselben Sitzung kam seine Fußzeile **genau einmal** vor — als Signal ist das wertlos, denn eine Überwachung liest die letzten Zeilen, nicht vier Megabyte. Umgekehrt rollt gewöhnlicher Gesprächstext nach oben weg: Ein Hilferuf stand **null Mal auf den 29 sichtbaren Zeilen und sechs Mal in den 983 des Verlaufs**. Sechs Rufe, kein Alarm.
 
 Daraus wurde eine Rangfolge statt eines Kompromisses: **Der Bildschirm ist die Quelle, der Server ist die Gegenprobe.** Widersprechen sie sich, wird der Widerspruch angezeigt, und es gilt das Gemessene. Die Gegenprobe ist dafür da, Lücken zu finden — nicht, um zu entscheiden.
 
@@ -513,15 +513,15 @@ Drei Bauregeln sind daraus geworden, und alle drei zielen auf dieselbe Stelle:
 
 **Der Server löst den Namen auf, nicht der Client.** Er weiß, wer ruft, und baut die Kandidatenliste aus den Berechtigungen des rufenden Geräts. Ein Gerät ohne Zuweisung erfährt nicht einmal, dass der Eintrag existiert.
 
-**Mehrdeutigkeit wird nicht geraten.** Hält ein Gerät ein Token *und* ein Kontopasswort im selben Bereich, antwortet der Broker mit **409** und nennt die Kandidaten. Sonst käme irgendwann das Passwort heraus, wo ein Token gemeint war — der teuerste stille Fehler von allen, weil er als gültige Anmeldung an der falschen Stelle endet.
+**Mehrdeutigkeit wird nicht geraten.** Hält ein Gerät ein Token *und* ein Kontopasswort im selben Bereich, antwortet der Broker mit **409** und nennt die Kandidaten — solange keiner von ihnen als Regelfall markiert ist. Sonst käme irgendwann das Passwort heraus, wo ein Token gemeint war — der teuerste stille Fehler von allen, weil er als gültige Anmeldung an der falschen Stelle endet.
 
 **Ein Rat, der sich nur befolgen lässt, indem man die Regel bricht, ist ein Fehler im Rat.** Der Broker riet: Wert einmal je Sitzung holen und zwischenspeichern. Eine Agenten-Sitzung ist aber keine Shell — jeder Werkzeugaufruf ist ein eigener Prozess, und es gibt nichts, worin ein Wert zwischen zwei Aufrufen liegen bliebe, das nicht genau der verbotene Ablageort wäre. Ein Prüfer maß an sich selbst **8 Abrufe für 8 Aufrufe** bei fachlich **3** Schritten. Der richtige Rat lautet: weniger und größere Aufrufe, nicht ablegen.
 
-Dazu eine kleine Regel mit großer Wirkung: **Ein Name im Antwortfeld ist eine Beschriftung, kein Beleg.** Ob wirklich ein Token und nicht ein Passwort geliefert wurde, zeigt erst die Benutzung — 200 gegen 401.
+Dazu eine kleine Regel mit großer Wirkung: **Ein Name im Antwortfeld ist eine Beschriftung, kein Beleg.** Ob wirklich ein Token und nicht ein Passwort geliefert wurde, zeigt erst die Benutzung: 200 mit dem Token. Die Gegenprobe mit einem Passwort ist auf diesem Weg nie gefahren worden — ausgerechnet unter dem Satz, der die Benutzung verlangt, stand eine Erwartung statt einer Messung. Aufgefallen ist das erst im Faktencheck nach der Veröffentlichung.
 
 ## Der Mensch ist der Engpass, aber nicht, weil er zu wenig entscheidet
 
-An einem Morgen trug die Warteschlange des Menschen **16 Einträge**; nach anderthalb Stunden waren es **2**. Davon waren **12 echte Entscheidungen** — der Rest war Karteileiche. Vier Muster, jedes mit einem belegten Fall:
+An einem Morgen trug die Warteschlange des Menschen **16 Einträge**. **Zwölf davon waren echte Entscheidungen**, der Rest Karteileiche; nach anderthalb Stunden standen noch **2**. Vier Muster, jedes mit einem belegten Fall:
 
 1. **Sperren auf einen Merge verwaisen.** Ein Vorgang wartete tagelang „auf den Merge", der längst passiert war. Der Merge steht im Git-Server, die Sperre auf dem Ticket-Board, und niemand führt die beiden zusammen.
 2. **Ein Stapel, den es nicht gibt.** Eine Sitzung hielt ihre eigene Arbeit an, weil „sieben offene Anfragen beim Menschen liegen". Tatsächlich lag **eine**. Eine falsche Annahme über die Warteschlange eines anderen bremste echte Arbeit.
@@ -624,7 +624,7 @@ Sieht die Anzeige danach anders aus, haben Sie eine Prüfung. Sieht sie gleich a
         "running AI agents",
         "failure modes",
       ],
-      bodyMarkdown: `We run around two dozen AI agents in parallel, each in its own session. After two months of operation it is clear which class of failure is the expensive one — and it has neither a name nor an error message: **the state "everything is done" and the state "nothing has happened here for hours" look identical from the outside.** One session sat ready for **634 minutes** while the server had it down as finished at the very same time. Six sets of credentials sat waiting for a day, with valid permissions — they were fetched **zero times**, while the report said there was no access at all. Neither was noticed, because nothing turned red.
+      bodyMarkdown: `We run just over two dozen AI agents in parallel, each in its own session. After two months of operation it is clear which class of failure is the expensive one — and it has neither a name nor an error message: **the state "everything is done" and the state "nothing has happened here for hours" look identical from the outside.** One session sat ready for **634 minutes** while the server had it down as finished at the very same time. Six sets of credentials sat waiting for a day, with valid permissions — they were fetched **zero times**, while the report said there was no access at all. Neither was noticed, because nothing turned red.
 
 **At a glance:**
 
@@ -672,7 +672,7 @@ There are two places where you could read whether an agent is waiting on a human
 
 **The server does not see waiters.** For **12 out of 18** sessions that were demonstrably ready on screen it had no opinion. The reason is systematic and cannot be fixed by asking more often: the status report hangs off an event hook, and **waiting fires no event**. After a quarter of an hour without a report a session counts as mute. That is how the number arose that could have given this article its title: one session sat ready for **634 minutes** and was listed on the server as finished.
 
-**The screen does not show everything that happened.** The selection box an agent uses to ask a question sticks to the bottom of the screen and does not scroll away with the text. In the **4 MB transcript** of that same session its footer appeared **not once** — a monitor reading the transcript never sees that question. Conversely, ordinary conversation text scrolls off the top: one call for help appeared **zero times on screen and six times in the transcript**. Six calls, no alarm.
+**The screen does not show everything that happened.** The selection box an agent uses to ask a question sticks to the bottom of the screen and does not scroll away with the text. In the **4 MB transcript** of that same session its footer appeared **exactly once** — worthless as a signal, because a monitor reads the last few lines, not four megabytes. Conversely, ordinary conversation text scrolls off the top: one call for help appeared **zero times in the 29 visible lines and six times in the 983 of the transcript**. Six calls, no alarm.
 
 That produced a ranking rather than a compromise: **the screen is the source, the server is the cross-check.** Where they disagree, the disagreement is displayed and the measurement wins. The cross-check exists to find gaps, not to decide.
 
@@ -712,15 +712,15 @@ Three build rules came out of it, all aimed at the same spot:
 
 **The server resolves the name, not the client.** It knows who is calling and builds the candidate list from the calling device's permissions. A device with no assignment is not even told that the entry exists.
 
-**Ambiguity is never guessed.** If a device holds a token *and* an account password in the same area, the broker answers **409** and names the candidates. Otherwise the password would eventually come out where a token was meant — the most expensive silent failure of all, because it ends as a valid login in the wrong place.
+**Ambiguity is never guessed.** If a device holds a token *and* an account password in the same area, the broker answers **409** and names the candidates — as long as none of them is marked as the default. Otherwise the password would eventually come out where a token was meant — the most expensive silent failure of all, because it ends as a valid login in the wrong place.
 
 **Advice you can only follow by breaking the rule is a fault in the advice.** The broker advised: fetch the value once per session and cache it. But an agent session is not a shell — every tool call is its own process, and there is nothing a value could persist in between two calls that is not exactly the forbidden storage location. One reviewer measured on itself **8 fetches for 8 calls** across what were functionally **3** steps. The correct advice is: fewer, larger calls, and do not store.
 
-Plus a small rule with a large effect: **a name in a response field is a label, not evidence.** Whether a token rather than a password was really delivered only shows up in use — 200 versus 401.
+Plus a small rule with a large effect: **a name in a response field is a label, not evidence.** Whether a token rather than a password was really delivered only shows up in use: 200 with the token. The counter-check with a password was never actually run on that path — right underneath the sentence demanding use, there sat an expectation instead of a measurement. It surfaced only in the fact check after publication.
 
 ## The human is the bottleneck, but not for lack of decisions
 
-One morning the human's queue held **16 items**; an hour and a half later it held **2**. Of those, **12 were real decisions** — the rest was dead wood. Four patterns, each with a documented case:
+One morning the human's queue held **16 items**. **Twelve of them were real decisions**, the rest dead wood; an hour and a half later, **2** were left. Four patterns, each with a documented case:
 
 1. **Blocks on a merge go stale.** One item waited for days "on the merge", which had long since happened. The merge lives in the git server, the block on the ticket board, and nobody brings the two together.
 2. **A backlog that does not exist.** One session halted its own work because "seven open questions are sitting with the human". In fact there was **one**. A false assumption about somebody else's queue slowed down real work.
