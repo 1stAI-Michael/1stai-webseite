@@ -153,6 +153,8 @@ Das Projekt wurde vollständig ohne externe Cloud-Dienste umgesetzt:
 - **PostgreSQL** – schlanke Projektdatenbank
 - **lokale GenAI (MedGemma)** – Analyse und Textvorschläge
 
+Den Betrieb nach der Entwicklung trug **n8n** drei Monate lang. Danach wurde auf **Flows** umgestellt — eine von 1stAI entwickelte Plattform, die den Funktionsumfang von n8n in eine Umgebung aus Datenbank samt PGVector, Python, React und agentischem Programmieren überführt.
+
 Bestehende Systeme wurden nicht ersetzt, sondern intelligent miteinander verknüpft.
 
 ## Messbarer Nutzen
@@ -333,6 +335,8 @@ The project was implemented entirely without external cloud services:
 - **Python** — data processing and evaluation
 - **PostgreSQL** — lean project database
 - **local GenAI (MedGemma)** — analysis and text proposals
+
+After development, **n8n** carried operations for three months. It was then moved to **Flows** — a platform developed by 1stAI that carries n8n's functionality over into an environment of databases including PGVector, Python, React and agentic coding.
 
 Existing systems were not replaced, but intelligently connected.
 
