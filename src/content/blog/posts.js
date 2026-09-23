@@ -20,6 +20,414 @@
 export const posts = [
   // Newest first. Add new posts at the TOP of this array.
   {
+    slug: "agenten-stille-sieht-aus-wie-erfolg",
+    date: "2026-09-23",
+    updated: "2026-09-23",
+    author: "Claude (Opus 5)",
+    coAuthor: "Michael Schiffer",
+    aiGenerated: true,
+    coverAiGenerated: true,
+    de: {
+      title: "Bei Agenten sieht Stille aus wie Erfolg",
+      articleSection: "Agenten im Betrieb",
+      excerpt:
+        "Zwei Dutzend KI-Agenten im Parallelbetrieb: Eine Sitzung stand 634 Minuten bereit und galt als beendet, sechs abholbereite Zugänge hatten null Abrufe.",
+      coverAlt:
+        "Eine dunkle Wand mit reihenweise angebrachten Bildschirmen in einem unbeleuchteten Raum: Jeder zeigt blasse, unleserliche Zeilenmuster, nur einer in der oberen sichtbaren Reihe ist leer und schwarz. Am Fuß der Wand verläuft ein schmales orangefarbenes Lichtband, links steht eine niedrige Bank, rechts ein Kübelbaum",
+      tags: [
+        "KI-Agenten",
+        "Multi-Agenten-System",
+        "AI Coding Agents",
+        "Monitoring",
+        "Observability",
+        "stille Fehler",
+        "Agenten-Orchestrierung",
+        "Heartbeat",
+        "Timeout",
+        "Automatisierung",
+        "Betrieb von KI-Agenten",
+        "Fehlerklassen",
+      ],
+      bodyMarkdown: `Bei uns arbeiten rund zwei Dutzend KI-Agenten parallel, jeder in einer eigenen Sitzung. Nach zwei Monaten Betrieb ist klar, welche Fehlerklasse die teuerste ist — und sie hat weder einen Namen noch eine Fehlermeldung: **Der Zustand „alles erledigt" und der Zustand „hier passiert seit Stunden nichts" sehen von außen identisch aus.** Eine Sitzung stand **634 Minuten** arbeitsbereit und galt dem Server zur selben Zeit als beendet. Sechs Zugangsdaten lagen einen Tag lang abholbereit, mit gültiger Berechtigung — abgerufen wurden sie **null Mal**, während gemeldet war, es gebe gar keinen Zugang. Beides fiel niemandem auf, weil nichts rot wurde.
+
+**Auf einen Blick:**
+
+- **Ein schweigender Agent ist fertig, wartet oder ist tot.** Von außen ist das dasselbe Bild — und der Normalfall darunter ist das Warten, mehrmals pro Stunde.
+- **Eine Prüfung, die im Fehlerfall aussieht wie im Erfolgsfall, ist keine.** Eine Ablage mit geteilten Anleitungen fiel von **38 auf 3** Einträge, ohne dass eine einzige Sitzung einen Fehler meldete.
+- **Der Server weiß nichts von Wartenden.** Bei **12 von 18** nachweislich wartenden Sitzungen hatte er keine Meinung. Wer wartet, löst kein Ereignis aus, und ohne Ereignis gibt es keine Meldung.
+- **Die Karenz bestraft die schnelle Antwort.** Eine Wartezeit von 45 Sekunden gegen den eigenen Widerhall fraß eine Antwort, die nach 34 Sekunden kam.
+- **Je ordentlicher man die Regeln befolgt, desto stiller wird die Überwachung.** Der regelkonforme Weg führte an der einzigen Stelle vorbei, an der jemand hinsah.
+
+Wer einen einzelnen Agenten laufen lässt, merkt davon nichts: Man sitzt daneben und sieht zu. Der Bruch kommt irgendwo zwischen dem fünften und dem zehnten. Ab dort ist niemand mehr Zuschauer, und die Frage wechselt von *„was macht der gerade?"* zu *„woran merke ich, dass hier gerade nichts passiert, obwohl etwas passieren müsste?"*
+
+## Warum ein schweigender KI-Agent nichts beweist
+
+Klassische Überwachung lebt von einer Annahme, die für Agenten nicht gilt: **Ein kaputter Dienst hört auf zu antworten.** Genau deshalb trägt ein Ping. Ein Agent, der auf eine Entscheidung wartet, hört ebenfalls auf zu antworten — und das ist kein Ausnahmezustand, sondern sein Alltag. Zwischen „wartet seit vier Minuten auf eine Rückmeldung", „rechnet seit vier Minuten an einer Antwort" und „ist vor zwei Stunden gestorben" liegt kein Signal, sondern dieselbe unbewegte Oberfläche.
+
+Die Betriebspraxis kennt diese Unterscheidung längst — in Container-Umgebungen heißen die beiden Sonden nicht umsonst *liveness* und *readiness*, und sie prüfen ausdrücklich Verschiedenes. Nur lässt sich eine Bereitschaftssonde nicht an etwas anschrauben, das ein Textfenster ist und dessen Ausgabe für Menschen gedacht war.
+
+Ein Beispiel dafür, wie leise das ausgeht. Die geteilten Anleitungen aller Agenten hingen an einem einzigen symbolischen Link. Bei einem Umzug wanderte der Inhalt in ein Repository, der Link zeigte weiter auf die alte, leergeräumte Ablage. Vorher lieferte er **38** Anleitungen, danach **3**. Keine Sitzung meldete etwas, und das ist auch folgerichtig: Eine Anleitung, die nicht da ist, wird nicht angefordert und fehlt deshalb niemandem. Dass sie vorher tatsächlich benutzt wurden, sagten erst die Aufrufzähler — im Nachhinein.
+
+Die Einzelheit, die den Fall zum Lehrstück macht: \`ln -sfn\` legt einen Link **auch dann an, wenn das Ziel nicht existiert**, und meldet Erfolg. Der Exit-Code ist an dieser Stelle kein Beleg. \`readlink -f\` ist einer.
+
+## Eine Prüfung, die im Fehlerfall aussieht wie im Erfolgsfall, ist keine
+
+Das ist der Satz, den wir am häufigsten gebraucht haben, und er beschreibt einen Konstruktionsfehler, der sich unauffällig in fast jede selbst gebaute Kontrolle einschleicht. Drei Fälle, alle gemessen.
+
+**Die Kanarie, die im Fehlerfall grün ist.** Zentrale Regeln werden per Import in die Konfiguration der Agenten geladen, und als Beweis, dass der Import funktioniert, steht eine sichtbare Markerzeile darin. Ein Import war **zwei Wochen tot**: Eine Import-Zeile, die auf eine fehlende Datei zeigt, wird still übersprungen. Der Marker stand trotzdem da — eine andere Schicht lud dieselbe Datei und brachte ihn mit. Daraus wurde die Regel: Ein Marker beweist nur den Import, den **ausschließlich diese eine Zeile** liefert.
+
+**Der Test, der das Falsche zählt.** Für den Arbeitsplatz sollten Terminal-Reiter gezielt in bestimmte Fenster einsortiert werden. Gegengeprüft wurde zuerst mit „Fensterzahl plus eins", und die Sache galt als gelöst. Der Test taugt nichts: Er zeigt, dass ein Fenster entstanden ist, nicht wohin der Reiter ging — beide Fälle ergeben dieselbe Zahl. Die Messung, die es dann zeigte:
+
+\`\`\`
+vor dem Aktivieren : mein Fenster
+nach dem Aktivieren: Zielfenster      (über drei Zeitpunkte stabil)
+der Reiter landete : mein Fenster
+\`\`\`
+
+Der Fokus lag nachweislich auf dem Zielfenster. Der Reiter landete trotzdem beim Aufrufer.
+
+**Der Riegel ohne Beleg.** Vier frisch eingerichtete Sitzungen liefen einen Abend lang unangemeldet, ohne jede Spur. Eine abgewiesene Anmeldung schrieb weder lokal noch auf dem Server irgendetwas — „abgewiesen" und „nie versucht" sahen identisch aus. Gefunden wurde es nur über eine Positivkontrolle: Drei andere Sitzungen derselben Maschine schrieben im selben Zeitraum Zeilen, also war das Protokoll grundsätzlich in Betrieb. Die Pointe steckt im Datenmodell: Das Protokoll über **fehlgeschlagene** Anmeldungen konnte nicht am Identitäts-Verzeichnis hängen. Der häufigste Abweisungsgrund ist „unbekannter Name" — und genau diese Zeile verbot der Fremdschlüssel.
+
+Ein Riegel, der im Fehlerfall nichts schreibt, ist kein Riegel. Er ist eine Behauptung.
+
+## Der Server weiß nicht, wer wartet — die Zustandsmeldung hängt am falschen Ereignis
+
+Es gibt zwei Stellen, an denen sich ablesen ließe, ob ein Agent gerade auf einen Menschen wartet: den Bildschirm der Sitzung und die Zustandsmeldungen, die sie an einen Server schickt. Beide täuschen, und zwar in entgegengesetzte Richtungen.
+
+**Der Server sieht Wartende nicht.** Bei **12 von 18** Sitzungen, die auf dem Bildschirm nachweislich bereit standen, hatte er keine Meinung dazu. Der Grund ist systematisch und nicht behebbar, indem man öfter fragt: Die Zustandsmeldung hängt an einem Ereignis-Haken, und **wer wartet, löst kein Ereignis aus**. Nach einer Viertelstunde ohne Meldung gilt eine Sitzung als stumm. So kam die Zahl zustande, die dem Beitrag den Titel hätte geben können: Eine Sitzung stand **634 Minuten** bereit und war auf dem Server als beendet geführt.
+
+**Der Bildschirm zeigt nicht alles, was passiert ist.** Der Auswahlkasten, mit dem ein Agent eine Rückfrage stellt, klebt unten am Bildschirm und rollt nicht mit. Im **4 MB großen Mitschnitt** derselben Sitzung kam seine Fußzeile **kein einziges Mal** vor — eine Überwachung, die den Mitschnitt liest, sieht diese Frage nie. Umgekehrt rollt gewöhnlicher Gesprächstext nach oben weg: Ein Hilferuf stand **null Mal auf dem Bildschirm und sechs Mal im Verlauf**. Sechs Rufe, kein Alarm.
+
+Daraus wurde eine Rangfolge statt eines Kompromisses: **Der Bildschirm ist die Quelle, der Server ist die Gegenprobe.** Widersprechen sie sich, wird der Widerspruch angezeigt, und es gilt das Gemessene. Die Gegenprobe ist dafür da, Lücken zu finden — nicht, um zu entscheiden.
+
+Zwei Feinheiten haben dabei je einen eigenen stillen Fehler gekostet. Gezählt wird die **Anzahl** der Treffer, nicht ja/nein: Der Vorgänger merkte sich nur, *dass* quittiert wurde, und verschluckte damit jede weitere Frage, einmal stundenlang. Und die Zahl allein reicht auch nicht — eine quittierte Frage rollt weg, eine neue kommt, und wieder steht genau ein Treffer da. Also zusätzlich ein Abdruck des Textes um den Treffer herum: Ein wandernder Auswahlbalken ergibt denselben Abdruck, eine andere Frage einen anderen.
+
+Sogar die Suchtiefe ist eine Messung und keine Geschmacksfrage. Ohne Begrenzung standen fünf Fehlalarme in Tiefe **216 bis 1 961** Zeilen — alle längst beantwortet. Echte offene Fragen stehen **25 bis 60** Zeilen vom Ende. Mit einem Fenster von 120 Zeilen räumt sich ein Alarm von selbst weg, sobald die Sitzung weiterarbeitet.
+
+## Je ordentlicher man die Regeln befolgt, desto stiller wird die Überwachung
+
+Dieser Satz ist der unangenehmste Befund aus zwei Monaten, weil er die These gegen die eigene Disziplin wendet.
+
+Für die Koordination gilt bei uns eine Hausregel: Was eine andere Sitzung tun soll, wird ein eigenes Unter-Ticket mit eigenem Eigner — kein Absatz im Dach-Ticket. Eine Sitzung parkte ihre Arbeit also regelkonform hinter einem Unter-Ticket einer anderen Sitzung. Die Wache dieser Sitzung beobachtete aber nur ihre eigene Sicht, und das fremde Unter-Ticket stand nicht darin. Die Sperre fiel, die Wache lief **30 Minuten** weiter und meldete „nichts Neues". Aufgefallen ist es bei einer Handkontrolle nach drei stillen Zyklen.
+
+Der Weg, der am wenigsten überwacht war, war ausgerechnet der vorgeschriebene. Das ist kein Zufall: Überwachung entsteht dort, wo einmal etwas schiefgegangen ist, und der vorbildliche Pfad ist der, auf dem noch nie etwas schiefging.
+
+Dazu die zweite Geschichte, die zur selben Regel führt. Wachprozesse starben reihenweise mit Exit-Code 144, ohne eine einzige Zeile zu hinterlassen. Tagelang galt „zu viel Ausgabe" als Ursache. Gemessen war es eine der Sitzungen selbst: Ihr Aufräumbefehl suchte alte Wachen über den Skriptpfad. Alle Wachen der Maschine liefen über denselben Pfad, also traf er jede, auch die fremden — und einmal im selben Befehl die eigene, gerade gestartete. Seitdem fängt eine Wache das Abbruchsignal ab und schreibt „beendet durch SIGTERM, von Prozess X" ins Log.
+
+**Eine Wache muss laut sterben.** Eine tote Wache sieht von außen exakt aus wie eine ruhige.
+
+## Die Karenz bestraft die schnelle Antwort
+
+Genau ein Vorgang in unserem Aufbau schickt selbsttätig einen zweiten Text: Er stellt einen Auftrag zu, wartet auf eine Bestätigung im Rücklauf und schickt danach den Abschlussbefehl. Die Falle liegt offen zutage — der Text, auf den gewartet wird, steht **im Auftrag selbst** (*„antworte mit …"*) und damit Sekunden später auch im Rücklauf. Eine nackte Textsuche fände ihn statt der Antwort und löste den Abschluss sofort aus.
+
+Dagegen standen drei Sicherungen, jede für sich ausreichend: Das Suchmuster verlangt den Marker **allein auf einer Zeile** (im Auftrag steht er in Anführungszeichen mitten im Satz). Ein Nullpunkt zählt beim Eintritt, was schon dasteht, und löst nur bei einem Anstieg aus. Und eine Frist beendet das Warten.
+
+Die mittlere war falsch gebaut. Der Nullpunkt wurde erst **45 Sekunden** nach dem Zustellen gezogen, als Karenz gegen den eigenen Widerhall. Eine Sitzung antwortete nach **34 Sekunden**. Ihre echte Bestätigung landete damit *im* Nullpunkt statt darüber — „größer als" konnte nie mehr eintreten. Der Lauf lief in seine Frist, ohne dass irgendjemand etwas falsch gemacht hätte.
+
+Dass die Karenz entbehrlich war, steht in derselben Messung: Bei zwei anderen Sitzungen stand der Widerhall des Auftrags im Rücklauf, und der Nullpunkt war trotzdem null. Die erste Sicherung allein trägt. Die Karenz hat nachweislich nichts gefangen und nachweislich Antworten gefressen.
+
+Die übertragbare Regel ist größer als der Fall: **Eine Zeitspanne ist der falsche Maßstab, um den eigenen Widerhall von der Antwort der Gegenseite zu trennen.** Wer den Nullpunkt an eine Wartezeit hängt, rät die Antwortdauer der Gegenseite — und liegt bei der schnellen Antwort falsch, also genau dort, wo alles funktioniert hat. Der Nullpunkt gehört an ein Ereignis, die Unterscheidung an die Schärfe des Musters.
+
+## Null Abrufe heißt nicht, dass es nichts gibt
+
+Gemeldet war: „Die Agenten haben keinen Zugang zum Git-Server." Gemessen: Alle **sechs** Zugänge lagen seit einem Tag bereit, mit gültiger Berechtigung. Abrufe: **null**. Der Helfer auf der Maschine riet den Namen des Eintrags aus dem Hostnamen und lag jedes Mal daneben; im Prüfprotokoll stand eine ganze Ratereihe als „abgelehnt".
+
+Drei Bauregeln sind daraus geworden, und alle drei zielen auf dieselbe Stelle:
+
+**Der Server löst den Namen auf, nicht der Client.** Er weiß, wer ruft, und baut die Kandidatenliste aus den Berechtigungen des rufenden Geräts. Ein Gerät ohne Zuweisung erfährt nicht einmal, dass der Eintrag existiert.
+
+**Mehrdeutigkeit wird nicht geraten.** Hält ein Gerät ein Token *und* ein Kontopasswort im selben Bereich, antwortet der Broker mit **409** und nennt die Kandidaten. Sonst käme irgendwann das Passwort heraus, wo ein Token gemeint war — der teuerste stille Fehler von allen, weil er als gültige Anmeldung an der falschen Stelle endet.
+
+**Ein Rat, der sich nur befolgen lässt, indem man die Regel bricht, ist ein Fehler im Rat.** Der Broker riet: Wert einmal je Sitzung holen und zwischenspeichern. Eine Agenten-Sitzung ist aber keine Shell — jeder Werkzeugaufruf ist ein eigener Prozess, und es gibt nichts, worin ein Wert zwischen zwei Aufrufen liegen bliebe, das nicht genau der verbotene Ablageort wäre. Ein Prüfer maß an sich selbst **8 Abrufe für 8 Aufrufe** bei fachlich **3** Schritten. Der richtige Rat lautet: weniger und größere Aufrufe, nicht ablegen.
+
+Dazu eine kleine Regel mit großer Wirkung: **Ein Name im Antwortfeld ist eine Beschriftung, kein Beleg.** Ob wirklich ein Token und nicht ein Passwort geliefert wurde, zeigt erst die Benutzung — 200 gegen 401.
+
+## Der Mensch ist der Engpass, aber nicht, weil er zu wenig entscheidet
+
+An einem Morgen trug die Warteschlange des Menschen **16 Einträge**; nach anderthalb Stunden waren es **2**. Davon waren **12 echte Entscheidungen** — der Rest war Karteileiche. Vier Muster, jedes mit einem belegten Fall:
+
+1. **Sperren auf einen Merge verwaisen.** Ein Vorgang wartete tagelang „auf den Merge", der längst passiert war. Der Merge steht im Git-Server, die Sperre auf dem Ticket-Board, und niemand führt die beiden zusammen.
+2. **Ein Stapel, den es nicht gibt.** Eine Sitzung hielt ihre eigene Arbeit an, weil „sieben offene Anfragen beim Menschen liegen". Tatsächlich lag **eine**. Eine falsche Annahme über die Warteschlange eines anderen bremste echte Arbeit.
+3. **Die Sperre trägt eine andere Frage als die, für die sie gesetzt wurde.** Wer nur die Liste liest, stellt die alte Frage.
+4. **Die Antwort steht schon im Verlauf, es fehlt nur ein Befehl.** Zwei Vorgänge warteten tagelang auf je eine einzige Messzeile.
+
+Dieselbe Ungleichverteilung zeigt sich, wenn man die offene Last je Agent aufträgt statt sie zu schätzen:
+
+![Offene Last je Agent, 22.09.2026: 29 Agenten, 366 Punkte — zehn davon tragen zusammen 80 Prozent. Die Verteilung stammt aus der eigenen Auswertung, die Namen sind durch Platzhalter ersetzt.](/blog/agenten-stille-sieht-aus-wie-erfolg/figures/de/pareto.png)
+
+**29 Agenten, 366 Punkte, und zehn davon tragen 80 Prozent.** Die anderen neunzehn sind nicht untätig — sie sind still, und Stille ist hier kein Erfolgsnachweis, sondern eine offene Frage. Ohne diese Auswertung hätte niemand sagen können, wo die Last wirklich liegt; der Eindruck im Alltag folgt dem, wer am lautesten schreibt.
+
+Aus den vier Mustern ist eine eigene Rolle geworden: eine Sitzung, die täglich gegenliest, **bevor** der Mensch die Liste sieht. Sie legt vor, sie entscheidet nicht, und sie löst keine Sperre, die sie nicht belegen kann. Der Grund steht in einem Satz, der die Grenze dieser Idee markiert: *Eine aufgeräumte Warteschlange, in der eine echte Frage verschwunden ist, ist schlimmer als eine lange.*
+
+## Was davon als Regel geblieben ist
+
+Sechs Sätze, die wir uns aus zwei Monaten mitgenommen haben. Sie kosten nichts und sind auf jeden Aufbau übertragbar, in dem etwas Unbeaufsichtigtes arbeitet:
+
+1. **Jede Prüfung einmal im Fehlerfall ansehen.** Nicht „funktioniert sie?", sondern: Sieht sie anders aus, wenn sie scheitert? Sieht sie gleich aus, ist sie keine Prüfung, sondern Dekoration.
+2. **Positivkontrolle vor Befund.** Bevor „keine Einträge" etwas bedeutet, muss feststehen, dass an derselben Stelle überhaupt Einträge entstehen können. Bei uns hat genau das den unangemeldeten Abend gefunden.
+3. **Zwei Quellen, eine Rangfolge.** Eine Quelle, die man nicht gegenlesen kann, ist eine Annahme. Zwei Quellen ohne festgelegte Rangfolge sind ein Streit, den niemand schlichtet.
+4. **Zustände zählen, nicht quittieren.** Ein Zähler übersteht das zweite Vorkommnis, ein Ja/Nein-Merker nicht.
+5. **Nullpunkte an Ereignisse hängen, nie an Wartezeiten.** Sonst rät man die Geschwindigkeit der Gegenseite und bestraft die schnelle.
+6. **Jeder Test prüft einen Fehler, der schon passiert ist.** Wer einen entfernt, entfernt die Messung dahinter. Unsere Testsammlung ist nach diesem Grundsatz gewachsen, nicht nach Abdeckungszielen.
+
+## Grenzen
+
+Drei Dinge, die dieser Erfahrungsbericht **nicht** trägt — sonst ist es Werbung.
+
+**Die Zahlen stammen aus einem einzigen Aufbau.** Zwei Dutzend Agenten, zwei Monate, eine Werkzeugkette. Die Verhältnisse (12 von 18, 6 von 6, 38 auf 3) sind belastbar gemessen, aber sie sind keine Branchenwerte, und es wäre unredlich, sie so zu lesen.
+
+**Nichts davon ist gelöst, es ist nur sichtbar.** Die Fehlerklasse verschwindet nicht dadurch, dass man sie kennt. Wir haben sie in den beschriebenen Fällen messbar gemacht; dass es sie an Stellen gibt, an denen wir noch nicht hingesehen haben, ist nach zwei Monaten die wahrscheinlichste Annahme und nicht die pessimistische.
+
+**Für einen einzelnen Agenten lohnt der Aufwand nicht.** Wer neben einer Sitzung sitzt, ist selbst die Überwachung, und zwar eine gute. Der Aufwand beginnt sich irgendwo im mittleren einstelligen Bereich zu rechnen — vorher baut man Werkzeug für ein Problem, das man noch nicht hat.
+
+## Fazit: eine Frage, die sich heute beantworten lässt
+
+Die Maßnahme, die sofort etwas bringt, kostet keinen Umbau. Nehmen Sie die Prüfung, auf die Sie sich bei Ihren automatisierten Abläufen am meisten verlassen — den Statusbildschirm, die Erfolgsmeldung, den Haken in der Übersicht — und **stellen Sie den Fehlerfall absichtlich her**. Ziehen Sie das Ziel unter dem Link weg. Nehmen Sie der Prüfung ihre Datenquelle. Lassen Sie die Anmeldung scheitern.
+
+Sieht die Anzeige danach anders aus, haben Sie eine Prüfung. Sieht sie gleich aus, wissen Sie ab jetzt etwas, das Sie vorher nicht wussten: Diese Stelle hat Ihnen noch nie etwas gesagt. Sie war nur leise, und Sie haben das für Erfolg gehalten.`,
+      faq: [
+        {
+          q: "Warum merkt man nicht, wenn ein KI-Agent hängt?",
+          a: "Weil Warten und Ausfall dieselbe Oberfläche erzeugen. Klassische Überwachung geht davon aus, dass ein kaputter Dienst aufhört zu antworten — deshalb trägt ein Ping. Ein Agent, der auf eine Entscheidung wartet, hört ebenfalls auf zu antworten, und das ist bei ihm der Normalfall, mehrmals pro Stunde. Bei uns stand eine Sitzung 634 Minuten arbeitsbereit und war auf dem Server zur selben Zeit als beendet geführt.",
+        },
+        {
+          q: "Wie überwacht man mehrere KI-Agenten gleichzeitig?",
+          a: "Mit zwei Quellen und einer festgelegten Rangfolge. Der Bildschirm der Sitzung ist die Quelle, die Zustandsmeldung an den Server ist die Gegenprobe; widersprechen sie sich, wird der Widerspruch angezeigt und es gilt das Gemessene. Wichtig ist, Vorkommnisse zu zählen statt sie abzuhaken: Ein Ja/Nein-Merker verschluckt die zweite Frage, ein Zähler nicht. Bei uns hatte der Server bei 12 von 18 nachweislich wartenden Sitzungen keine Meinung.",
+        },
+        {
+          q: "Was ist ein stiller Fehler in einem Multi-Agenten-System?",
+          a: "Ein Zustand, in dem etwas Vorgesehenes nicht passiert, ohne dass eine Fehlermeldung entsteht. Beispiele aus unserem Betrieb: eine Ablage mit geteilten Anleitungen fiel von 38 auf 3 Einträge, weil ein symbolischer Link auf eine leergeräumte Ablage zeigte — keine Sitzung meldete etwas, denn eine Anleitung, die nicht da ist, wird nicht angefordert. Oder sechs bereitliegende Zugangsdaten mit null Abrufen, während gemeldet war, es gebe keinen Zugang.",
+        },
+        {
+          q: "Wie prüft man, ob eine Überwachung überhaupt funktioniert?",
+          a: "Indem man den Fehlerfall absichtlich herstellt und nachsieht, ob die Anzeige sich ändert. Sieht sie im Fehlerfall aus wie im Erfolgsfall, ist sie keine Prüfung. Dazu gehört die Positivkontrolle: Bevor 'keine Einträge' etwas bedeutet, muss feststehen, dass an derselben Stelle überhaupt Einträge entstehen können. Bei uns liefen vier Sitzungen einen Abend lang unangemeldet, und 'abgewiesen' sah exakt aus wie 'nie versucht'.",
+        },
+        {
+          q: "Warum sind Timeouts bei Agenten-Automatisierung gefährlich?",
+          a: "Weil eine Zeitspanne die Antwortdauer der Gegenseite rät. Wir haben nach dem Zustellen eines Auftrags 45 Sekunden Karenz gegen den eigenen Widerhall gewartet, bevor der Zählerstand als Nullpunkt genommen wurde. Eine Sitzung antwortete nach 34 Sekunden — ihre Bestätigung landete im Nullpunkt statt darüber, und die Bedingung konnte nie mehr eintreten. Die Karenz bestraft die schnelle Antwort. Der Nullpunkt gehört an ein Ereignis, nicht an eine Wartezeit.",
+        },
+      ],
+      sources: [
+        {
+          title: "Google SRE Book — Monitoring Distributed Systems",
+          url: "https://sre.google/sre-book/monitoring-distributed-systems/",
+        },
+        {
+          title: "Kubernetes — Liveness, Readiness and Startup Probes",
+          url: "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+        },
+        {
+          title: "Richard I. Cook — How Complex Systems Fail",
+          url: "https://how.complexsystems.fail/",
+        },
+        {
+          title: "Prometheus — Jobs and instances (the up metric)",
+          url: "https://prometheus.io/docs/concepts/jobs_instances/",
+        },
+      ],
+    },
+    en: {
+      title: "With agents, silence looks like success",
+      articleSection: "Agents in production",
+      excerpt:
+        "Two dozen AI agents running in parallel: one session sat ready for 634 minutes while the server had it down as finished, and six waiting credentials saw zero fetches.",
+      coverAlt:
+        "A dark wall of screens mounted in rows in an unlit room: each shows pale, unreadable line patterns, only one in the upper visible row is empty and black. A narrow orange light strip runs along the foot of the wall, a low bench on the left, a potted tree on the right",
+      tags: [
+        "AI agents",
+        "multi-agent systems",
+        "AI coding agents",
+        "monitoring",
+        "observability",
+        "silent failure",
+        "agent orchestration",
+        "heartbeat",
+        "timeout",
+        "automation",
+        "running AI agents",
+        "failure modes",
+      ],
+      bodyMarkdown: `We run around two dozen AI agents in parallel, each in its own session. After two months of operation it is clear which class of failure is the expensive one — and it has neither a name nor an error message: **the state "everything is done" and the state "nothing has happened here for hours" look identical from the outside.** One session sat ready for **634 minutes** while the server had it down as finished at the very same time. Six sets of credentials sat waiting for a day, with valid permissions — they were fetched **zero times**, while the report said there was no access at all. Neither was noticed, because nothing turned red.
+
+**At a glance:**
+
+- **A silent agent is finished, waiting, or dead.** From the outside these look the same — and the ordinary case underneath is waiting, several times an hour.
+- **A check that looks the same when it fails as when it passes is not a check.** A store of shared instructions dropped from **38 to 3** entries without a single session reporting an error.
+- **The server knows nothing about waiters.** For **12 out of 18** sessions that were demonstrably waiting it had no opinion. Waiting fires no event, and without an event there is no report.
+- **A grace period punishes the fast answer.** A 45-second wait against our own echo swallowed an answer that arrived after 34 seconds.
+- **The more strictly you follow the rules, the quieter the watch gets.** The compliant path led straight past the only place anyone was looking.
+
+If you run a single agent you notice none of this: you sit next to it and watch. The break comes somewhere between the fifth and the tenth. From there nobody is a spectator any more, and the question shifts from *"what is it doing right now?"* to *"how would I know that nothing is happening here, when something should be?"*
+
+## Why a silent AI agent proves nothing
+
+Classic monitoring rests on an assumption that does not hold for agents: **a broken service stops answering.** That is exactly why a ping works. An agent waiting for a decision also stops answering — and that is not an exceptional state, it is its daily routine. Between "has been waiting four minutes for a reply", "has been computing an answer for four minutes" and "died two hours ago" there is no signal, only the same motionless surface.
+
+Operations practice has long known the distinction — in container environments the two probes are called *liveness* and *readiness* for a reason, and they deliberately test different things. It is just that you cannot bolt a readiness probe onto something that is a text window whose output was written for humans.
+
+An example of how quietly this plays out. The shared instructions for all agents hung off a single symbolic link. During a move the content went into a repository while the link kept pointing at the old, emptied store. Before, it served **38** instructions; afterwards, **3**. No session reported anything, which follows logically: an instruction that is not there is never requested and is therefore missed by nobody. That they had genuinely been used before was something only the invocation counters could say — in hindsight.
+
+The detail that makes this a teaching case: \`ln -sfn\` will create a link **even when the target does not exist**, and report success. The exit code proves nothing here. \`readlink -f\` does.
+
+## A check that looks the same when it fails as when it passes is not a check
+
+This is the sentence we used most often, and it describes a design flaw that works its way quietly into almost every home-made control. Three cases, all measured.
+
+**The canary that is green when it fails.** Central rules are pulled into the agents' configuration via an import, and as proof that the import works, a visible marker line sits inside it. One import was **dead for two weeks**: an import line pointing at a missing file is silently skipped. The marker was there anyway — another layer loaded the same file and brought it along. Hence the rule: a marker only proves the import that **this one line alone** delivers.
+
+**The test that counts the wrong thing.** For the workplace, terminal tabs were supposed to be sorted into specific windows. The first cross-check was "window count plus one", and the matter was considered solved. That test is worthless: it shows that a window was created, not where the tab went — both cases yield the same number. The measurement that did show it:
+
+\`\`\`
+before activating : my window
+after activating  : target window   (stable across three samples)
+the tab landed in : my window
+\`\`\`
+
+Focus was demonstrably on the target window. The tab landed with the caller regardless.
+
+**The bolt without a record.** Four freshly set up sessions ran an entire evening unauthenticated, leaving no trace. A rejected login wrote nothing, neither locally nor on the server — "rejected" and "never attempted" looked identical. It was found only through a positive control: three other sessions on the same machine did write lines in the same period, so the log was working in principle. The punchline sits in the data model: the log of **failed** logins could not hang off the identity table. The most common rejection reason is "unknown name" — and that is precisely the row the foreign key forbade.
+
+A bolt that writes nothing when it fails is not a bolt. It is a claim.
+
+## The server does not know who is waiting — the status report hangs off the wrong event
+
+There are two places where you could read whether an agent is waiting on a human: the session's screen, and the status reports it sends to a server. Both mislead, in opposite directions.
+
+**The server does not see waiters.** For **12 out of 18** sessions that were demonstrably ready on screen it had no opinion. The reason is systematic and cannot be fixed by asking more often: the status report hangs off an event hook, and **waiting fires no event**. After a quarter of an hour without a report a session counts as mute. That is how the number arose that could have given this article its title: one session sat ready for **634 minutes** and was listed on the server as finished.
+
+**The screen does not show everything that happened.** The selection box an agent uses to ask a question sticks to the bottom of the screen and does not scroll away with the text. In the **4 MB transcript** of that same session its footer appeared **not once** — a monitor reading the transcript never sees that question. Conversely, ordinary conversation text scrolls off the top: one call for help appeared **zero times on screen and six times in the transcript**. Six calls, no alarm.
+
+That produced a ranking rather than a compromise: **the screen is the source, the server is the cross-check.** Where they disagree, the disagreement is displayed and the measurement wins. The cross-check exists to find gaps, not to decide.
+
+Two subtleties each cost their own silent failure. What gets counted is the **number** of hits, not yes/no: the predecessor only remembered *that* something had been acknowledged, and swallowed every further question — once for hours. And the number alone is not enough either: an acknowledged question scrolls away, a new one arrives, and again there is exactly one hit. So a fingerprint of the surrounding text goes with it — a moving selection bar yields the same fingerprint, a different question yields a different one.
+
+Even the search depth is a measurement rather than a matter of taste. Without a limit, five false alarms sat at depths of **216 to 1,961** lines — all long since answered. Genuine open questions sit **25 to 60** lines from the end. With a 120-line window an alarm clears itself as soon as the session carries on working.
+
+## The more strictly you follow the rules, the quieter the watch gets
+
+This is the most uncomfortable finding of the two months, because it turns the thesis against our own discipline.
+
+Our house rule for coordination is: whatever another session is meant to do becomes its own sub-ticket with its own owner — not a paragraph in the parent ticket. So one session parked its work, entirely by the book, behind another session's sub-ticket. But that session's watch observed only its own view, and the foreign sub-ticket was not in it. The block cleared, the watch ran on for **30 minutes** and reported "nothing new". It surfaced during a manual check after three silent cycles.
+
+The least-watched path was the prescribed one. That is no coincidence: monitoring grows where something once went wrong, and the exemplary path is the one where nothing ever did.
+
+Then the second story, which leads to the same rule. Watch processes were dying in numbers with exit code 144, leaving not a single line behind. For days "too much output" was the assumed cause. What we measured was one of the sessions itself: its cleanup command looked for stale watches by script path. Every watch on the machine ran via that same path, so it hit all of them, including other sessions' — and once, within the same command, its own, freshly started one. Since then a watch traps the termination signal and writes "terminated by SIGTERM, from process X" into its log.
+
+**A watch has to die loudly.** A dead watch looks, from the outside, exactly like a quiet one.
+
+## A grace period punishes the fast answer
+
+Exactly one procedure in our setup sends a second message on its own: it delivers a task, waits for a confirmation in the backlog, and then sends the closing command. The trap is obvious — the text being waited for sits **inside the task itself** (*"reply with …"*) and therefore appears in the backlog seconds later. A bare text search would find that instead of the answer and trigger the close immediately.
+
+Three safeguards stood against it, each sufficient on its own: the pattern requires the marker **alone on a line** (in the task it sits in quotes mid-sentence). A baseline counts what is already there on entry and only triggers on an increase. And a deadline ends the wait.
+
+The middle one was built wrong. The baseline was taken **45 seconds** after delivery, as a grace period against our own echo. One session answered after **34 seconds**. Its genuine confirmation therefore landed *inside* the baseline instead of above it — "greater than" could never occur again. The run drove into its deadline without anyone having done anything wrong.
+
+That the grace period was dispensable is in the same measurement: for two other sessions the echo of the task did appear in the backlog, and the baseline was nonetheless zero. The first safeguard carries on its own. The grace period demonstrably caught nothing and demonstrably ate answers.
+
+The transferable rule is bigger than the case: **a span of time is the wrong yardstick for separating your own echo from the other side's answer.** Hanging the baseline off a waiting period means guessing how fast the other side replies — and getting it wrong for the fast answer, which is precisely where everything worked. The baseline belongs to an event; the distinction belongs to the sharpness of the pattern.
+
+## Zero fetches does not mean there is nothing there
+
+The report said: "the agents have no access to the git server." The measurement: all **six** credentials had been available for a day, with valid permissions. Fetches: **zero**. The helper on the machine guessed the entry name from the hostname and was wrong every time; the audit log held an entire series of guesses marked "denied".
+
+Three build rules came out of it, all aimed at the same spot:
+
+**The server resolves the name, not the client.** It knows who is calling and builds the candidate list from the calling device's permissions. A device with no assignment is not even told that the entry exists.
+
+**Ambiguity is never guessed.** If a device holds a token *and* an account password in the same area, the broker answers **409** and names the candidates. Otherwise the password would eventually come out where a token was meant — the most expensive silent failure of all, because it ends as a valid login in the wrong place.
+
+**Advice you can only follow by breaking the rule is a fault in the advice.** The broker advised: fetch the value once per session and cache it. But an agent session is not a shell — every tool call is its own process, and there is nothing a value could persist in between two calls that is not exactly the forbidden storage location. One reviewer measured on itself **8 fetches for 8 calls** across what were functionally **3** steps. The correct advice is: fewer, larger calls, and do not store.
+
+Plus a small rule with a large effect: **a name in a response field is a label, not evidence.** Whether a token rather than a password was really delivered only shows up in use — 200 versus 401.
+
+## The human is the bottleneck, but not for lack of decisions
+
+One morning the human's queue held **16 items**; an hour and a half later it held **2**. Of those, **12 were real decisions** — the rest was dead wood. Four patterns, each with a documented case:
+
+1. **Blocks on a merge go stale.** One item waited for days "on the merge", which had long since happened. The merge lives in the git server, the block on the ticket board, and nobody brings the two together.
+2. **A backlog that does not exist.** One session halted its own work because "seven open questions are sitting with the human". In fact there was **one**. A false assumption about somebody else's queue slowed down real work.
+3. **The block carries a different question than the one it was set for.** Read only the list, and you ask the old question.
+4. **The answer is already in the history, only a command is missing.** Two items waited for days on a single line of measurement each.
+
+The same uneven distribution shows up when you plot open load per agent instead of estimating it:
+
+![Open load per agent, 22 September 2026: 29 agents, 366 points — ten of them carry 80 percent between them. The distribution is from our own board; the names are replaced with placeholders.](/blog/agenten-stille-sieht-aus-wie-erfolg/figures/en/pareto.png)
+
+**29 agents, 366 points, and ten of them carry 80 percent.** The other nineteen are not idle — they are silent, and silence here is not proof of success but an open question. Without this plot nobody could have said where the load actually sits; day to day, the impression follows whoever writes loudest.
+
+Out of those four patterns grew a role of its own: a session that reads the queue every day **before** the human sees it. It presents, it does not decide, and it clears no block it cannot substantiate. The reason sits in one sentence that marks the limit of the idea: *a tidy queue with a real question missing from it is worse than a long one.*
+
+## What stayed as a rule
+
+Six sentences we took away from two months. They cost nothing and transfer to any setup where something works unattended:
+
+1. **Look at every check once in its failure case.** Not "does it work?", but: does it look different when it fails? If it looks the same, it is not a check, it is decoration.
+2. **Positive control before finding.** Before "no entries" means anything, it must be established that entries can appear at that spot at all. That is exactly what found our unauthenticated evening.
+3. **Two sources, one ranking.** A source you cannot cross-check is an assumption. Two sources without a fixed ranking are an argument nobody settles.
+4. **Count states, do not acknowledge them.** A counter survives the second occurrence; a yes/no flag does not.
+5. **Hang baselines off events, never off waiting periods.** Otherwise you are guessing the other side's speed, and punishing the fast one.
+6. **Every test checks a failure that has already happened.** Remove one and you remove the measurement behind it. Our test suite grew along that principle, not along coverage targets.
+
+## Limits
+
+Three things this field report does **not** support — otherwise it would be marketing.
+
+**The numbers come from one single setup.** Two dozen agents, two months, one toolchain. The ratios (12 of 18, 6 of 6, 38 to 3) are properly measured, but they are not industry figures and it would be dishonest to read them that way.
+
+**None of this is solved, it is only visible.** The failure class does not disappear because you know about it. We made it measurable in the cases described; that it exists in places we have not yet looked at is, after two months, the likely assumption rather than the pessimistic one.
+
+**For a single agent the effort does not pay.** If you sit next to one session, you are the monitoring, and a good one at that. The effort starts to pay somewhere in the mid single digits — before that you are building tooling for a problem you do not have yet.
+
+## Conclusion: a question you can answer today
+
+The measure that pays off immediately costs no rebuild. Take the check you rely on most in your automated workflows — the status screen, the success message, the tick in the overview — and **produce the failure case on purpose**. Pull the target out from under the link. Take the data source away from the check. Make the login fail.
+
+If the display looks different afterwards, you have a check. If it looks the same, you now know something you did not know before: that spot has never told you anything. It was merely quiet, and you took that for success.`,
+      faq: [
+        {
+          q: "Why do you not notice when an AI agent is stuck?",
+          a: "Because waiting and failure produce the same surface. Classic monitoring assumes a broken service stops answering — that is why a ping works. An agent waiting for a decision also stops answering, and for an agent that is the ordinary case, several times an hour. In our setup one session sat ready for 634 minutes while the server listed it as finished at the same time.",
+        },
+        {
+          q: "How do you monitor several AI agents at once?",
+          a: "With two sources and a fixed ranking. The session's screen is the source, the status report to the server is the cross-check; where they disagree, the disagreement is displayed and the measurement wins. The important part is counting occurrences instead of ticking them off: a yes/no flag swallows the second question, a counter does not. In our measurements the server had no opinion on 12 out of 18 sessions that were demonstrably waiting.",
+        },
+        {
+          q: "What is a silent failure in a multi-agent system?",
+          a: "A state in which something intended does not happen, without an error being raised. Examples from our operation: a store of shared instructions dropped from 38 to 3 entries because a symbolic link pointed at an emptied directory — no session reported anything, since an instruction that is not there is never requested. Or six sets of credentials waiting with zero fetches, while the report said there was no access.",
+        },
+        {
+          q: "How do you test whether monitoring actually works?",
+          a: "By producing the failure case on purpose and checking whether the display changes. If it looks the same when it fails as when it passes, it is not a check. That includes the positive control: before 'no entries' means anything, it must be established that entries can appear at that spot at all. In our case four sessions ran unauthenticated for an evening, and 'rejected' looked exactly like 'never attempted'.",
+        },
+        {
+          q: "Why are timeouts dangerous in agent automation?",
+          a: "Because a span of time guesses how fast the other side replies. After delivering a task we waited 45 seconds as a grace period against our own echo before taking the counter as a baseline. One session answered after 34 seconds — its confirmation landed inside the baseline instead of above it, and the condition could never occur again. The grace period punishes the fast answer. A baseline belongs to an event, not to a waiting period.",
+        },
+      ],
+      sources: [
+        {
+          title: "Google SRE Book — Monitoring Distributed Systems",
+          url: "https://sre.google/sre-book/monitoring-distributed-systems/",
+        },
+        {
+          title: "Kubernetes — Liveness, Readiness and Startup Probes",
+          url: "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+        },
+        {
+          title: "Richard I. Cook — How Complex Systems Fail",
+          url: "https://how.complexsystems.fail/",
+        },
+        {
+          title: "Prometheus — Jobs and instances (the up metric)",
+          url: "https://prometheus.io/docs/concepts/jobs_instances/",
+        },
+      ],
+    },
+    draft: true,
+  },
+  {
     slug: "projektplan-excel-daten-und-bild-trennen",
     date: "2026-09-22",
     updated: "2026-09-22",
