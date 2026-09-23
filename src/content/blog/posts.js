@@ -398,7 +398,6 @@ Not as a replacement for medical expertise, but as structured, objective support
         },
       ],
     },
-    draft: true,
   },
   {
     slug: "agenten-stille-sieht-aus-wie-erfolg",
@@ -436,8 +435,11 @@ Not as a replacement for medical expertise, but as structured, objective support
 - **Ein schweigender Agent ist fertig, wartet oder ist tot.** Von außen ist das dasselbe Bild — und der Normalfall darunter ist das Warten, mehrmals pro Stunde.
 - **Eine Prüfung, die im Fehlerfall aussieht wie im Erfolgsfall, ist keine.** Eine Ablage mit geteilten Anleitungen fiel von **38 auf 3** Einträge, ohne dass eine einzige Sitzung einen Fehler meldete.
 - **Der Server weiß nichts von Wartenden.** Bei **12 von 18** nachweislich wartenden Sitzungen hatte er keine Meinung. Wer wartet, löst kein Ereignis aus, und ohne Ereignis gibt es keine Meldung.
-- **Die Karenz bestraft die schnelle Antwort.** Eine Wartezeit von 45 Sekunden gegen den eigenen Widerhall fraß eine Antwort, die nach 34 Sekunden kam.
+- **Eine Wartezeit als Sicherung bestraft die schnelle Antwort.** Wir warteten 45 Sekunden, bevor wir zu zählen anfingen — eine Sitzung antwortete nach 34, und ihre Antwort wurde nie gezählt.
 - **Je ordentlicher man die Regeln befolgt, desto stiller wird die Überwachung.** Der regelkonforme Weg führte an der einzigen Stelle vorbei, an der jemand hinsah.
+- **Die zweitgrößte offene Last liegt beim Menschen.** 28 Agenten und ein Mensch, 366 offene Punkte — zehn Beteiligte tragen 80 Prozent davon, und auf Platz zwei steht kein Agent.
+
+**Die Gegenprobe kostet keinen Umbau:** Nehmen Sie die Prüfung, auf die Sie sich am meisten verlassen, und stellen Sie den Fehlerfall absichtlich her. Sieht die Anzeige danach gleich aus, war sie nie eine Prüfung.
 
 Wer einen einzelnen Agenten laufen lässt, merkt davon nichts: Man sitzt daneben und sieht zu. Der Bruch kommt irgendwo zwischen dem fünften und dem zehnten. Ab dort ist niemand mehr Zuschauer, und die Frage wechselt von *„was macht der gerade?"* zu *„woran merke ich, dass hier gerade nichts passiert, obwohl etwas passieren müsste?"*
 
@@ -449,7 +451,7 @@ Die Betriebspraxis kennt diese Unterscheidung längst — in Container-Umgebunge
 
 Ein Beispiel dafür, wie leise das ausgeht. Die geteilten Anleitungen aller Agenten hingen an einem einzigen symbolischen Link. Bei einem Umzug wanderte der Inhalt in ein Repository, der Link zeigte weiter auf die alte, leergeräumte Ablage. Vorher lieferte er **38** Anleitungen, danach **3**. Keine Sitzung meldete etwas, und das ist auch folgerichtig: Eine Anleitung, die nicht da ist, wird nicht angefordert und fehlt deshalb niemandem. Dass sie vorher tatsächlich benutzt wurden, sagten erst die Aufrufzähler — im Nachhinein.
 
-Die Einzelheit, die den Fall zum Lehrstück macht: \`ln -sfn\` legt einen Link **auch dann an, wenn das Ziel nicht existiert**, und meldet Erfolg. Der Exit-Code ist an dieser Stelle kein Beleg. \`readlink -f\` ist einer.
+Die Einzelheit, die den Fall zum Lehrstück macht: Der Befehl, der den Link anlegt, meldet **auch dann Erfolg, wenn das Ziel gar nicht existiert**. Der Erfolgscode ist hier kein Beleg — ein Blick auf das aufgelöste Ziel ist einer (\`ln -sfn\` gegen \`readlink -f\`).
 
 ## Eine Prüfung, die im Fehlerfall aussieht wie im Erfolgsfall, ist keine
 
@@ -467,11 +469,11 @@ der Reiter landete : mein Fenster
 
 Der Fokus lag nachweislich auf dem Zielfenster. Der Reiter landete trotzdem beim Aufrufer.
 
-**Der Riegel ohne Beleg.** Vier frisch eingerichtete Sitzungen liefen einen Abend lang unangemeldet, ohne jede Spur. Eine abgewiesene Anmeldung schrieb weder lokal noch auf dem Server irgendetwas — „abgewiesen" und „nie versucht" sahen identisch aus. Gefunden wurde es nur über eine Positivkontrolle: Drei andere Sitzungen derselben Maschine schrieben im selben Zeitraum Zeilen, also war das Protokoll grundsätzlich in Betrieb. Die Pointe steckt im Datenmodell: Das Protokoll über **fehlgeschlagene** Anmeldungen konnte nicht am Identitäts-Verzeichnis hängen. Der häufigste Abweisungsgrund ist „unbekannter Name" — und genau diese Zeile verbot der Fremdschlüssel.
+**Die Anmeldesperre ohne Beleg.** Vier frisch eingerichtete Sitzungen liefen einen Abend lang unangemeldet, ohne jede Spur. Eine abgewiesene Anmeldung schrieb weder lokal noch auf dem Server irgendetwas — „abgewiesen" und „nie versucht" sahen identisch aus. Gefunden wurde es nur über eine Positivkontrolle: Drei andere Sitzungen derselben Maschine schrieben im selben Zeitraum Zeilen, also war das Protokoll grundsätzlich in Betrieb. Die Pointe steckt im Datenmodell: Das Protokoll über **fehlgeschlagene** Anmeldungen konnte nicht am Identitäts-Verzeichnis hängen. Der häufigste Abweisungsgrund ist „unbekannter Name" — und genau diese Zeile verbot der Fremdschlüssel.
 
-Ein Riegel, der im Fehlerfall nichts schreibt, ist kein Riegel. Er ist eine Behauptung.
+Eine Anmeldesperre, die im Fehlerfall nichts schreibt, ist keine Sperre. Sie ist eine Behauptung.
 
-## Der Server weiß nicht, wer wartet — die Zustandsmeldung hängt am falschen Ereignis
+## Der Server weiß nicht, wer wartet
 
 Es gibt zwei Stellen, an denen sich ablesen ließe, ob ein Agent gerade auf einen Menschen wartet: den Bildschirm der Sitzung und die Zustandsmeldungen, die sie an einen Server schickt. Beide täuschen, und zwar in entgegengesetzte Richtungen.
 
@@ -481,9 +483,7 @@ Es gibt zwei Stellen, an denen sich ablesen ließe, ob ein Agent gerade auf eine
 
 Daraus wurde eine Rangfolge statt eines Kompromisses: **Der Bildschirm ist die Quelle, der Server ist die Gegenprobe.** Widersprechen sie sich, wird der Widerspruch angezeigt, und es gilt das Gemessene. Die Gegenprobe ist dafür da, Lücken zu finden — nicht, um zu entscheiden.
 
-Zwei Feinheiten haben dabei je einen eigenen stillen Fehler gekostet. Gezählt wird die **Anzahl** der Treffer, nicht ja/nein: Der Vorgänger merkte sich nur, *dass* quittiert wurde, und verschluckte damit jede weitere Frage, einmal stundenlang. Und die Zahl allein reicht auch nicht — eine quittierte Frage rollt weg, eine neue kommt, und wieder steht genau ein Treffer da. Also zusätzlich ein Abdruck des Textes um den Treffer herum: Ein wandernder Auswahlbalken ergibt denselben Abdruck, eine andere Frage einen anderen.
-
-Sogar die Suchtiefe ist eine Messung und keine Geschmacksfrage. Ohne Begrenzung standen fünf Fehlalarme in Tiefe **216 bis 1 961** Zeilen — alle längst beantwortet. Echte offene Fragen stehen **25 bis 60** Zeilen vom Ende. Mit einem Fenster von 120 Zeilen räumt sich ein Alarm von selbst weg, sobald die Sitzung weiterarbeitet.
+Zwei Feinheiten haben dabei je einen eigenen stillen Fehler gekostet. Gezählt wird die **Anzahl** der Treffer, nicht ja/nein: Der Vorgänger merkte sich nur, *dass* quittiert wurde, und verschluckte damit jede weitere Frage, einmal stundenlang. Und sogar die Suchtiefe ist eine Messung: Ohne Begrenzung standen fünf Fehlalarme in Tiefe **216 bis 1 961** Zeilen — alle längst beantwortet —, während echte offene Fragen **25 bis 60** Zeilen vom Ende stehen.
 
 ## Je ordentlicher man die Regeln befolgt, desto stiller wird die Überwachung
 
@@ -497,7 +497,7 @@ Dazu die zweite Geschichte, die zur selben Regel führt. Wachprozesse starben re
 
 **Eine Wache muss laut sterben.** Eine tote Wache sieht von außen exakt aus wie eine ruhige.
 
-## Die Karenz bestraft die schnelle Antwort
+## Eine Wartezeit als Sicherung bestraft die schnelle Antwort
 
 Genau ein Vorgang in unserem Aufbau schickt selbsttätig einen zweiten Text: Er stellt einen Auftrag zu, wartet auf eine Bestätigung im Rücklauf und schickt danach den Abschlussbefehl. Die Falle liegt offen zutage — der Text, auf den gewartet wird, steht **im Auftrag selbst** (*„antworte mit …"*) und damit Sekunden später auch im Rücklauf. Eine nackte Textsuche fände ihn statt der Antwort und löste den Abschluss sofort aus.
 
@@ -509,7 +509,7 @@ Dass die Karenz entbehrlich war, steht in derselben Messung: Bei zwei anderen Si
 
 Die übertragbare Regel ist größer als der Fall: **Eine Zeitspanne ist der falsche Maßstab, um den eigenen Widerhall von der Antwort der Gegenseite zu trennen.** Wer den Nullpunkt an eine Wartezeit hängt, rät die Antwortdauer der Gegenseite — und liegt bei der schnellen Antwort falsch, also genau dort, wo alles funktioniert hat. Der Nullpunkt gehört an ein Ereignis, die Unterscheidung an die Schärfe des Musters.
 
-## Null Abrufe heißt nicht, dass es nichts gibt
+## Null Abrufe hieß nicht, dass es keinen Zugang gab
 
 Gemeldet war: „Die Agenten haben keinen Zugang zum Git-Server." Gemessen: Alle **sechs** Zugänge lagen seit einem Tag bereit, mit gültiger Berechtigung. Abrufe: **null**. Der Helfer auf der Maschine riet den Namen des Eintrags aus dem Hostnamen und lag jedes Mal daneben; im Prüfprotokoll stand eine ganze Ratereihe als „abgelehnt".
 
@@ -548,7 +548,7 @@ Sechs Sätze, die wir uns aus zwei Monaten mitgenommen haben. Sie kosten nichts 
 2. **Positivkontrolle vor Befund.** Bevor „keine Einträge" etwas bedeutet, muss feststehen, dass an derselben Stelle überhaupt Einträge entstehen können. Bei uns hat genau das den unangemeldeten Abend gefunden.
 3. **Zwei Quellen, eine Rangfolge.** Eine Quelle, die man nicht gegenlesen kann, ist eine Annahme. Zwei Quellen ohne festgelegte Rangfolge sind ein Streit, den niemand schlichtet.
 4. **Zustände zählen, nicht quittieren.** Ein Zähler übersteht das zweite Vorkommnis, ein Ja/Nein-Merker nicht.
-5. **Nullpunkte an Ereignisse hängen, nie an Wartezeiten.** Sonst rät man die Geschwindigkeit der Gegenseite und bestraft die schnelle.
+5. **Womit verglichen wird, legt ein Ereignis fest, nie eine Wartezeit.** Sonst rät man die Geschwindigkeit der Gegenseite — und liegt bei der schnellen Antwort falsch.
 6. **Jeder Test prüft einen Fehler, der schon passiert ist.** Wer einen entfernt, entfernt die Messung dahinter. Unsere Testsammlung ist nach diesem Grundsatz gewachsen, nicht nach Abdeckungszielen.
 
 ## Grenzen
@@ -637,6 +637,9 @@ Sieht die Anzeige danach anders aus, haben Sie eine Prüfung. Sieht sie gleich a
 - **The server knows nothing about waiters.** For **12 out of 18** sessions that were demonstrably waiting it had no opinion. Waiting fires no event, and without an event there is no report.
 - **A grace period punishes the fast answer.** A 45-second wait against our own echo swallowed an answer that arrived after 34 seconds.
 - **The more strictly you follow the rules, the quieter the watch gets.** The compliant path led straight past the only place anyone was looking.
+- **The second-largest open load sits with the human.** 28 agents and one human, 366 open points — ten participants carry 80 percent of it, and rank two is not an agent.
+
+**The counter-check costs no rebuild:** take the check you rely on most, and produce its failure case on purpose. If the display looks the same afterwards, it was never a check.
 
 If you run a single agent you notice none of this: you sit next to it and watch. The break comes somewhere between the fifth and the tenth. From there nobody is a spectator any more, and the question shifts from *"what is it doing right now?"* to *"how would I know that nothing is happening here, when something should be?"*
 
@@ -648,7 +651,7 @@ Operations practice has long known the distinction — in container environments
 
 An example of how quietly this plays out. The shared instructions for all agents hung off a single symbolic link. During a move the content went into a repository while the link kept pointing at the old, emptied store. Before, it served **38** instructions; afterwards, **3**. No session reported anything, which follows logically: an instruction that is not there is never requested and is therefore missed by nobody. That they had genuinely been used before was something only the invocation counters could say — in hindsight.
 
-The detail that makes this a teaching case: \`ln -sfn\` will create a link **even when the target does not exist**, and report success. The exit code proves nothing here. \`readlink -f\` does.
+The detail that makes this a teaching case: the command that creates the link reports **success even when the target does not exist**. The exit code proves nothing here — resolving the link does (\`ln -sfn\` against \`readlink -f\`).
 
 ## A check that looks the same when it fails as when it passes is not a check
 
@@ -666,11 +669,11 @@ the tab landed in : my window
 
 Focus was demonstrably on the target window. The tab landed with the caller regardless.
 
-**The bolt without a record.** Four freshly set up sessions ran an entire evening unauthenticated, leaving no trace. A rejected login wrote nothing, neither locally nor on the server — "rejected" and "never attempted" looked identical. It was found only through a positive control: three other sessions on the same machine did write lines in the same period, so the log was working in principle. The punchline sits in the data model: the log of **failed** logins could not hang off the identity table. The most common rejection reason is "unknown name" — and that is precisely the row the foreign key forbade.
+**The access gate that leaves no record.** Four freshly set up sessions ran an entire evening unauthenticated, leaving no trace. A rejected login wrote nothing, neither locally nor on the server — "rejected" and "never attempted" looked identical. It was found only through a positive control: three other sessions on the same machine did write lines in the same period, so the log was working in principle. The punchline sits in the data model: the log of **failed** logins could not hang off the identity table. The most common rejection reason is "unknown name" — and that is precisely the row the foreign key forbade.
 
-A bolt that writes nothing when it fails is not a bolt. It is a claim.
+An access gate that writes nothing when it fails is not a gate. It is a claim.
 
-## The server does not know who is waiting — the status report hangs off the wrong event
+## The server does not know who is waiting
 
 There are two places where you could read whether an agent is waiting on a human: the session's screen, and the status reports it sends to a server. Both mislead, in opposite directions.
 
@@ -680,9 +683,7 @@ There are two places where you could read whether an agent is waiting on a human
 
 That produced a ranking rather than a compromise: **the screen is the source, the server is the cross-check.** Where they disagree, the disagreement is displayed and the measurement wins. The cross-check exists to find gaps, not to decide.
 
-Two subtleties each cost their own silent failure. What gets counted is the **number** of hits, not yes/no: the predecessor only remembered *that* something had been acknowledged, and swallowed every further question — once for hours. And the number alone is not enough either: an acknowledged question scrolls away, a new one arrives, and again there is exactly one hit. So a fingerprint of the surrounding text goes with it — a moving selection bar yields the same fingerprint, a different question yields a different one.
-
-Even the search depth is a measurement rather than a matter of taste. Without a limit, five false alarms sat at depths of **216 to 1,961** lines — all long since answered. Genuine open questions sit **25 to 60** lines from the end. With a 120-line window an alarm clears itself as soon as the session carries on working.
+Two subtleties each cost their own silent failure. What gets counted is the **number** of hits, not yes/no: the predecessor only remembered *that* something had been acknowledged, and swallowed every further question — once for hours. And even the search depth is a measurement: without a limit, five false alarms sat at depths of **216 to 1,961** lines — all long since answered — while genuine open questions sit **25 to 60** lines from the end.
 
 ## The more strictly you follow the rules, the quieter the watch gets
 
@@ -708,7 +709,7 @@ That the grace period was dispensable is in the same measurement: for two other 
 
 The transferable rule is bigger than the case: **a span of time is the wrong yardstick for separating your own echo from the other side's answer.** Hanging the baseline off a waiting period means guessing how fast the other side replies — and getting it wrong for the fast answer, which is precisely where everything worked. The baseline belongs to an event; the distinction belongs to the sharpness of the pattern.
 
-## Zero fetches does not mean there is nothing there
+## Zero fetches did not mean there was no access
 
 The report said: "the agents have no access to the git server." The measurement: all **six** credentials had been available for a day, with valid permissions. Fetches: **zero**. The helper on the machine guessed the entry name from the hostname and was wrong every time; the audit log held an entire series of guesses marked "denied".
 
@@ -747,7 +748,7 @@ Six sentences we took away from two months. They cost nothing and transfer to an
 2. **Positive control before finding.** Before "no entries" means anything, it must be established that entries can appear at that spot at all. That is exactly what found our unauthenticated evening.
 3. **Two sources, one ranking.** A source you cannot cross-check is an assumption. Two sources without a fixed ranking are an argument nobody settles.
 4. **Count states, do not acknowledge them.** A counter survives the second occurrence; a yes/no flag does not.
-5. **Hang baselines off events, never off waiting periods.** Otherwise you are guessing the other side's speed, and punishing the fast one.
+5. **What you compare against is fixed by an event, never by a waiting period.** Otherwise you are guessing the other side's speed — and getting it wrong for the fast answer.
 6. **Every test checks a failure that has already happened.** Remove one and you remove the measurement behind it. Our test suite grew along that principle, not along coverage targets.
 
 ## Limits
