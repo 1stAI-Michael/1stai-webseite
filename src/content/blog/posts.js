@@ -20,6 +20,383 @@
 export const posts = [
   // Newest first. Add new posts at the TOP of this array.
   {
+    slug: "experience-beats-talent-systeme-mitdenken",
+    date: "2026-09-23",
+    updated: "2026-09-23",
+    // Der deutsche Rumpf stammt unveraendert von Michael (Erstveroeffentlichung
+    // 06.02.2026 auf der Schwesterseite, dort entfernt). EN-Fassung, FAQ und
+    // Quellen sind maschinell entstanden — deshalb traegt der Beitrag die
+    // Kennzeichnung, und deshalb steht der Mensch als coAuthor: verantworten
+    // kann einen Text nur er.
+    author: "Michael Schiffer und Claude (Opus 5)",
+    coAuthor: "Michael Schiffer",
+    aiGenerated: true,
+    coverAiGenerated: true,
+    de: {
+      title: "Experience beats talent – wenn Systeme mitdenken",
+      articleSection: "Klinische Prozesse",
+      excerpt:
+        "Automatisierte DSF-Auswertung, lokale KI und strukturierte Workflows optimieren Aufnahme, Therapieplanung und Dokumentation in der Schmerztherapie.",
+      coverAlt:
+        "Helle Bildmontage in Blau und Weiß: links ein ausgefüllter Auswertungsbogen und darunter eine farbige Rot-Grün-Matrix, in der Mitte eine aufsteigende Kette aus orangefarbenen, gelben und grünen Häkchen-Kreisen, rechts ein Server-Symbol mit Schloss und mehrere Auswertungs-Dashboards",
+      tags: [
+        "Schmerztherapie",
+        "multimodale Schmerztherapie",
+        "lokale KI",
+        "On-Premise KI",
+        "MedGemma",
+        "Prozessoptimierung",
+        "Healthcare AI",
+        "Fragebogenauswertung",
+        "Patientensteuerung",
+        "n8n",
+        "Klinikprozesse",
+        "DSGVO-konforme KI",
+      ],
+      bodyMarkdown: `**Automatisierte DSF-Auswertung und KI-gestützte Patientensteuerung in der multimodalen Schmerztherapie**
+
+## Kurzfassung
+In diesem Projekt wurde der Aufnahme- und Bewertungsprozess von Patienten in der Schmerztherapie vollständig neu strukturiert.
+Durch automatisierte Fragebogenauswertung, objektive KI-Zweitbewertung und intelligente Systemverknüpfung konnten Zeitaufwand, Medienbrüche und subjektive Verzerrungen deutlich reduziert werden – vollständig on-premises.
+
+## Ausgangslage: Komplexe Entscheidungen unter Zeitdruck
+Die Aufnahme geeigneter Patienten in eine akute oder multimodale Schmerztherapie ist organisatorisch und medizinisch anspruchsvoll.
+Neben der medizinischen Eignung müssen unter anderem berücksichtigt werden:
+
+- Passung zum Therapiekonzept
+- Abrechnungsfähigkeit
+- Pflegeaufwand (hoch / niedrig)
+- Gruppenzusammensetzung
+- Einteilung in akute oder multimodale Schmerztherapie
+
+Zur strukturierten Erfassung dieser Informationen erhalten Bewerber standardisierte Fragebögen.
+
+## Datengrundlage: DSF und erweiterte Patientenfragebögen
+Für dieses Projekt wurde eine ursprünglich von Pfizer entwickelte Plattform genutzt:
+**Paindetect**, heute **VivoPainCare**.
+
+Die Fragebögen liefern strukturierte Selbstauskünfte zu:
+
+- Schmerzcharakteristik
+- Funktionseinschränkungen
+- psychischen Begleitfaktoren
+- bisherigen Therapien
+- Alltags- und Belastungsfaktoren
+
+Diese Daten bilden die Grundlage für die weitere automatisierte Verarbeitung.
+
+## Automatisierte Auswertung und Entscheidungsunterstützung
+Die eingehenden Fragebögen werden automatisiert verarbeitet und in mehrere Artefakte überführt:
+
+### One-Pager für das interdisziplinäre Team
+- einheitliche Skalen
+- klare Vergleichbarkeit
+- **RYG-Codierung (Red / Yellow / Green)**
+- schnelle Übersicht für Ärzte, Psychotherapeuten und Pflege
+
+### Übersichtstabellen zur Planung
+- objektive Vergleichskriterien
+- strukturierte Vorauswahl geeigneter Patienten
+- Unterstützung bei Terminierung und Gruppenzusammenstellung
+
+Ziel ist nicht die Automatisierung der Entscheidung, sondern eine **belastbare, reproduzierbare Entscheidungsgrundlage**.
+
+## KI-gestützte Zweitbewertung mit MedGemma (lokal)
+Parallel zur regelbasierten Auswertung erfolgt eine objektive Zweitbewertung durch eine lokal betriebene GenAI.
+
+### Eingesetztes Modell
+**MedGemma 7B** – ein medizinisch spezialisiertes Sprachmodell, abgeleitet aus der Gemma-Modellfamilie von Google DeepMind.
+
+**Trainingsgrundlage (vereinfacht):**
+- medizinische Fachliteratur
+- klinische Texte
+- strukturierte Gesundheitsdokumentation
+
+### Einsatz im Projekt
+- strukturierte Zusammenfassung der Fragebögen
+- Plausibilisierung der Angaben
+- Vorschlag zur Eingruppierung
+
+Hinweis: Die KI trifft **keine medizinischen Entscheidungen**.
+Sie unterstützt die strukturierte Vorarbeit – die Verantwortung bleibt beim Arzt.
+Alle KI-Komponenten werden **vollständig lokal (on-prem)** betrieben.
+
+## Vorbereitung des Aufnahmegesprächs
+Für das eigentliche Aufnahmegespräch erhält der Arzt einen **vorbefüllten Anamnesebogen**, der:
+
+- relevante Antworten aus dem Online-Fragebogen enthält
+- strukturiert und vorpriorisiert ist
+- Medienbrüche vermeidet
+
+Das Aufnahmegespräch wird dadurch:
+- kürzer
+- zielgerichteter
+- inhaltlich konsistenter
+
+In einem Folgeprojekt wird dieses Gespräch zusätzlich **KI-gestützt dokumentiert**.
+
+## Verlaufsbewertungen und Abschlussbericht
+Während der Therapie werden zwei standardisierte Verlaufsbewertungen durchgeführt.
+
+Diese werden:
+- automatisch ausgewertet
+- mit den Ausgangsdaten verglichen
+- durch die lokale KI analysiert
+
+Auf dieser Basis schlägt das System einen **Verlaufsbaustein für den Abschlussbericht** vor – sachlich, neutral und konsistent.
+
+## Technische Umsetzung (100 % on-prem)
+Das Projekt wurde vollständig ohne externe Cloud-Dienste umgesetzt:
+
+- **n8n** – Workflow-Orchestrierung
+- **Python** – Datenverarbeitung und Auswertung
+- **PostgreSQL** – schlanke Projektdatenbank
+- **lokale GenAI (MedGemma)** – Analyse und Textvorschläge
+
+Bestehende Systeme wurden nicht ersetzt, sondern intelligent miteinander verknüpft.
+
+## Messbarer Nutzen
+Die Effekte sind klar quantifizierbar:
+
+- **≈ 2 Stunden Zeitersparnis pro Patient** im Pre-Assessment (Arzt, Psychotherapeut, Pflege, Koordination)
+- kein zusätzliches Anreisen der Patienten für Vorabgespräche
+- objektivere, neutralere Bewertung der Daten
+- **≈ 10 Minuten Einsparung pro Abschlussbericht** allein durch den automatisierten Verlaufsbaustein
+
+## Fazit
+Dieses Projekt zeigt, wie sich **Ablaufoptimierung, bestehende Systeme und lokale KI** sinnvoll kombinieren lassen, um reale Entlastung im klinischen Alltag zu schaffen.
+Nicht als Ersatz für medizinische Expertise, sondern als strukturierte, objektive Unterstützung.
+
+**Experience beats talent – wenn Systeme mitdenken.**`,
+      faq: [
+        {
+          q: "Wie laeuft die automatisierte Auswertung von Patientenfragebogen ab?",
+          a: "Die Bewerber fuellen standardisierte Fragebogen aus. Die eingehenden Antworten werden automatisiert verarbeitet und in zwei Artefakte ueberfuehrt: einen One-Pager fuer das interdisziplinaere Team mit einheitlichen Skalen und einer Rot-Gelb-Gruen-Codierung, und Uebersichtstabellen fuer die Planung mit objektiven Vergleichskriterien. Ziel ist nicht die Automatisierung der Entscheidung, sondern eine belastbare, reproduzierbare Entscheidungsgrundlage.",
+        },
+        {
+          q: "Darf eine KI ueber die Aufnahme in eine Schmerztherapie entscheiden?",
+          a: "Nein, und in diesem Projekt tut sie es auch nicht. Die lokal betriebene KI liefert eine strukturierte Zusammenfassung der Fragebogen, plausibilisiert die Angaben und schlaegt eine Eingruppierung vor. Die medizinische Entscheidung und die Verantwortung dafuer bleiben beim Arzt. Die KI-Zweitbewertung laeuft parallel zur regelbasierten Auswertung, nicht an ihrer Stelle.",
+        },
+        {
+          q: "Warum lokale KI statt Cloud in der Klinik?",
+          a: "Weil Patientendaten die Einrichtung nicht verlassen sollen. Das Projekt wurde vollstaendig ohne externe Cloud-Dienste umgesetzt: Workflow-Orchestrierung, Datenverarbeitung, Projektdatenbank und das Sprachmodell laufen on-prem. Bestehende Systeme wurden dabei nicht ersetzt, sondern miteinander verknuepft.",
+        },
+        {
+          q: "Was bringt eine automatisierte Fragebogenauswertung konkret?",
+          a: "Gemessen wurden zwei Effekte: rund zwei Stunden Zeitersparnis pro Patient im Pre-Assessment ueber Arzt, Psychotherapeut, Pflege und Koordination hinweg, und rund zehn Minuten pro Abschlussbericht allein durch den automatisiert vorgeschlagenen Verlaufsbaustein. Dazu kommt, dass Patienten fuer Vorabgespraeche nicht zusaetzlich anreisen muessen.",
+        },
+        {
+          q: "Welche Technik steckt hinter der Loesung?",
+          a: "n8n fuer die Workflow-Orchestrierung, Python fuer Datenverarbeitung und Auswertung, PostgreSQL als schlanke Projektdatenbank und ein lokal betriebenes, medizinisch spezialisiertes Sprachmodell aus der Gemma-Familie fuer Analyse und Textvorschlaege. Alles on-premises, ohne externe Dienste.",
+        },
+      ],
+      sources: [
+        {
+          title: "MedGemma — Google Health AI Developer Foundations",
+          url: "https://developers.google.com/health-ai-developer-foundations/medgemma",
+        },
+        {
+          title: "MedGemma bei Google DeepMind",
+          url: "https://deepmind.google/models/gemma/medgemma/",
+        },
+        {
+          title: "n8n — Workflow-Automatisierung",
+          url: "https://n8n.io/",
+        },
+        {
+          title: "PostgreSQL",
+          url: "https://www.postgresql.org/",
+        },
+        {
+          title: "Deutsche Schmerzgesellschaft",
+          url: "https://www.schmerzgesellschaft.de/",
+        },
+      ],
+    },
+    en: {
+      title: "Experience beats talent – when systems think along",
+      articleSection: "Clinical processes",
+      excerpt:
+        "Automated DSF evaluation, local AI and structured workflows improve admission, therapy planning and documentation in multimodal pain therapy.",
+      coverAlt:
+        "A bright blue-and-white composite: on the left a filled-in evaluation sheet with a red-and-green colour matrix below it, in the centre a rising chain of orange, yellow and green tick circles, on the right a server icon with a padlock and several analysis dashboards",
+      tags: [
+        "pain therapy",
+        "multimodal pain therapy",
+        "local LLM",
+        "on-premise AI",
+        "MedGemma",
+        "process optimisation",
+        "healthcare AI",
+        "questionnaire scoring",
+        "patient triage",
+        "n8n",
+        "clinical workflows",
+        "GDPR-compliant AI",
+      ],
+      bodyMarkdown: `**Automated DSF evaluation and AI-assisted patient triage in multimodal pain therapy**
+
+## Summary
+In this project the admission and assessment process for patients in pain therapy was restructured from the ground up.
+Automated questionnaire evaluation, objective AI second assessment and intelligent system integration markedly reduced time spent, media breaks and subjective bias — entirely on-premises.
+
+## Starting point: complex decisions under time pressure
+Admitting suitable patients to acute or multimodal pain therapy is demanding, organisationally and medically.
+Besides medical suitability, the following have to be weighed, among others:
+
+- fit with the therapy concept
+- eligibility for reimbursement
+- nursing effort (high / low)
+- group composition
+- assignment to acute or multimodal pain therapy
+
+To capture this information in a structured way, applicants receive standardised questionnaires.
+
+## Data basis: DSF and extended patient questionnaires
+For this project a platform originally developed by Pfizer was used:
+**Paindetect**, today **VivoPainCare**.
+
+The questionnaires provide structured self-reports on:
+
+- pain characteristics
+- functional limitations
+- accompanying psychological factors
+- previous therapies
+- everyday life and stress factors
+
+These data form the basis for all further automated processing.
+
+## Automated evaluation and decision support
+Incoming questionnaires are processed automatically and turned into several artefacts:
+
+### One-pager for the interdisciplinary team
+- uniform scales
+- clear comparability
+- **RYG coding (red / yellow / green)**
+- quick overview for physicians, psychotherapists and nursing staff
+
+### Overview tables for planning
+- objective comparison criteria
+- structured pre-selection of suitable patients
+- support for scheduling and group composition
+
+The aim is not to automate the decision, but to provide a **robust, reproducible basis** for it.
+
+## AI-assisted second assessment with MedGemma (local)
+Alongside the rule-based evaluation, an objective second assessment is carried out by a locally operated GenAI.
+
+### Model used
+**MedGemma 7B** — a medically specialised language model derived from Google DeepMind's Gemma model family.
+
+**Training basis (simplified):**
+- medical literature
+- clinical texts
+- structured health documentation
+
+### Use in the project
+- structured summary of the questionnaires
+- plausibility checking of the entries
+- proposal for grouping
+
+Note: the AI makes **no medical decisions**.
+It supports the structured preparatory work — responsibility stays with the physician.
+All AI components run **entirely locally (on-prem)**.
+
+## Preparing the admission interview
+For the admission interview itself the physician receives a **pre-filled anamnesis form** which:
+
+- carries the relevant answers from the online questionnaire
+- is structured and pre-prioritised
+- avoids media breaks
+
+This makes the admission interview:
+- shorter
+- more focused
+- more consistent in content
+
+In a follow-up project this interview will additionally be **documented with AI support**.
+
+## Progress assessments and final report
+Two standardised progress assessments are carried out during therapy.
+
+These are:
+- evaluated automatically
+- compared against the baseline data
+- analysed by the local AI
+
+On that basis the system proposes a **progress section for the final report** — factual, neutral and consistent.
+
+## Technical implementation (100 % on-prem)
+The project was implemented entirely without external cloud services:
+
+- **n8n** — workflow orchestration
+- **Python** — data processing and evaluation
+- **PostgreSQL** — lean project database
+- **local GenAI (MedGemma)** — analysis and text proposals
+
+Existing systems were not replaced, but intelligently connected.
+
+## Measurable benefit
+The effects are clearly quantifiable:
+
+- **≈ 2 hours saved per patient** in pre-assessment (physician, psychotherapist, nursing, coordination)
+- no additional travel for patients for preliminary consultations
+- more objective, more neutral assessment of the data
+- **≈ 10 minutes saved per final report**, from the automated progress section alone
+
+## Conclusion
+This project shows how **process optimisation, existing systems and local AI** can be combined to create real relief in everyday clinical work.
+Not as a replacement for medical expertise, but as structured, objective support.
+
+**Experience beats talent — when systems think along.**`,
+      faq: [
+        {
+          q: "How does automated evaluation of patient questionnaires work?",
+          a: "Applicants fill in standardised questionnaires. The incoming answers are processed automatically and turned into two artefacts: a one-pager for the interdisciplinary team with uniform scales and red-yellow-green coding, and overview tables for planning with objective comparison criteria. The aim is not to automate the decision but to provide a robust, reproducible basis for it.",
+        },
+        {
+          q: "Is an AI allowed to decide on admission to pain therapy?",
+          a: "No, and in this project it does not. The locally operated AI produces a structured summary of the questionnaires, checks the entries for plausibility and proposes a grouping. The medical decision and the responsibility for it stay with the physician. The AI second assessment runs alongside the rule-based evaluation, not instead of it.",
+        },
+        {
+          q: "Why local AI instead of cloud in a clinical setting?",
+          a: "Because patient data should not leave the institution. The project was implemented entirely without external cloud services: workflow orchestration, data processing, the project database and the language model all run on-premises. Existing systems were not replaced but connected to one another.",
+        },
+        {
+          q: "What does automated questionnaire evaluation actually deliver?",
+          a: "Two effects were measured: roughly two hours saved per patient in pre-assessment across physician, psychotherapist, nursing and coordination, and roughly ten minutes per final report from the automatically proposed progress section alone. On top of that, patients no longer have to travel in for separate preliminary consultations.",
+        },
+        {
+          q: "What technology is behind the solution?",
+          a: "n8n for workflow orchestration, Python for data processing and evaluation, PostgreSQL as a lean project database, and a locally operated, medically specialised language model from the Gemma family for analysis and text proposals. All on-premises, with no external services.",
+        },
+      ],
+      sources: [
+        {
+          title: "MedGemma — Google Health AI Developer Foundations",
+          url: "https://developers.google.com/health-ai-developer-foundations/medgemma",
+        },
+        {
+          title: "MedGemma bei Google DeepMind",
+          url: "https://deepmind.google/models/gemma/medgemma/",
+        },
+        {
+          title: "n8n — Workflow-Automatisierung",
+          url: "https://n8n.io/",
+        },
+        {
+          title: "PostgreSQL",
+          url: "https://www.postgresql.org/",
+        },
+        {
+          title: "Deutsche Schmerzgesellschaft",
+          url: "https://www.schmerzgesellschaft.de/",
+        },
+      ],
+    },
+    draft: true,
+  },
+  {
     slug: "agenten-stille-sieht-aus-wie-erfolg",
     date: "2026-09-23",
     updated: "2026-09-23",
@@ -425,7 +802,6 @@ If the display looks different afterwards, you have a check. If it looks the sam
         },
       ],
     },
-    draft: true,
   },
   {
     slug: "projektplan-excel-daten-und-bild-trennen",
