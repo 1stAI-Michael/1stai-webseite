@@ -33,7 +33,7 @@ export const posts = [
       excerpt:
         "Die Werksvorgabe xhigh lieferte in 20 Läufen null verwertbare Antworten. Gemessen an echter Wartungsdokumentation für ein COBOL-Programm mit 4.000 Zeilen.",
       coverAlt:
-        "PROVISORISCH — nach dem Rendern am Cover schreiben",
+        "Ein großer industrieller Drehknopf aus gebürstetem Stahl auf einer Stahlplatte, bis zum Anschlag nach rechts gedreht: Eine kurze orangefarbene Marke zeigt auf einen erhabenen Endanschlag am rechten Rand des Knopfes, am Ring links ist eine schlichte Raste ohne Beschriftung zu sehen. Unten verläuft eine schmale orangefarbene Linie",
       tags: [
         "Denkstufen",
         "Reasoning Effort",
@@ -187,7 +187,7 @@ Das ist der eigentliche Befund hinter den Zahlen. Nicht, dass eine bestimmte Stu
       excerpt:
         "The factory default xhigh produced zero usable answers in 20 runs. Measured against real maintenance documentation for a 4,000-line COBOL program.",
       coverAlt:
-        "PROVISIONAL — write from the rendered cover",
+        "A large industrial rotary dial in brushed steel on a steel panel, turned fully clockwise to its stop: a short orange mark points at a raised end stop on the right of the dial, and one plain unmarked detent is visible on the bezel to the left. A narrow orange line runs along the bottom",
       tags: [
         "thinking levels",
         "reasoning effort",
