@@ -335,7 +335,6 @@ That is the real finding behind the numbers. Not that one particular level is ri
         },
       ],
     },
-    draft: true,
   },
   {
     slug: "experience-beats-talent-systeme-mitdenken",
