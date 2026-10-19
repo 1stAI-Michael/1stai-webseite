@@ -8,16 +8,22 @@ out/
 
 # Arbeitsmaterial, gehoert nicht ins oeffentliche Repo:
 # blog-drafts/ enthaelt die Themenliste mit Kundenkontext und noch nicht
-# veroeffentlichte Social-Texte, blog-inbox/ die Rohbilder. Die Bild-Prompts
-# bleiben drin, weil sie zur Reproduzierbarkeit eines Beitrags gehoeren.
+# veroeffentlichte Social-Texte, blog-inbox/ die Rohbilder und Bild-Auftraege.
 # Ohne Schraegstrich mit Absicht: seit 22.09.2026 ist blog-drafts ein Verweis
 # ins Repo veroeffentlichungs-schutz, und fuer git ist ein Verweis eine Datei.
 # `blog-drafts/` haette nur das Verzeichnis gefangen und den Verweis committet.
+#
+# blog-inbox GANZ draussen, seit 19.10.2026 (fA-1143, Michael-Entscheid).
+# Vorher war `!blog-inbox/*/prompts.md` ausgenommen, damit die Bild-Auftraege
+# der Reproduzierbarkeit wegen mitlaufen. Der Preis dafuer war unsichtbar: Das
+# Leck-Gate prueft Beitraege, nicht dieses Verzeichnis — die Dateien gingen also
+# ungeprueft ins oeffentliche Repo. Am 22.09.2026 standen in fuenf frischen
+# prompts.md Ticketnummern; gefunden hat sie kein Gate, sondern eine Handprobe.
+# Reproduzierbarkeit wiegt das nicht auf: Ein Bild-Auftrag ist Arbeitsmaterial,
+# und Material, das nicht hinausgeht, kann auch nichts verraten. Die Auftraege
+# liegen weiter auf der Platte und im privaten Weg ueber /mnt/austausch.
 blog-drafts
-blog-inbox/*
-!blog-inbox/*/
-blog-inbox/*/*
-!blog-inbox/*/prompts.md
+blog-inbox
 
 # Die Namensliste des Leck-Gates. Eine Aufstellung dessen, was nicht nach
 # draussen soll, ist selbst etwas, das nicht nach draussen soll. Die Vorlage
