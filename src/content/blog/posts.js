@@ -31,7 +31,7 @@ export const posts = [
       title: "Denkstufen nachgemessen: die Vorgabe verliert",
       articleSection: "Lokale LLMs",
       excerpt:
-        "Die Werksvorgabe xhigh lieferte in 20 Läufen null verwertbare Antworten. Gemessen an echter Wartungsdokumentation für ein COBOL-Programm mit 4.000 Zeilen.",
+        "Die Werksvorgabe xhigh lieferte in 20 Läufen null verwertbare Antworten. Gemessen an echter Wartungsdokumentation für ein gewachsenes Legacy-Programm mit 4.000 Zeilen.",
       coverAlt:
         "Ein großer industrieller Drehknopf aus gebürstetem Stahl auf einer Stahlplatte, bis zum Anschlag nach rechts gedreht: Eine kurze orangefarbene Marke zeigt auf einen erhabenen Endanschlag am rechten Rand des Knopfes, am Ring links ist eine schlichte Raste ohne Beschriftung zu sehen. Unten verläuft eine schmale orangefarbene Linie",
       tags: [
@@ -40,7 +40,7 @@ export const posts = [
         "lokale LLMs",
         "Qwen3.8",
         "llama.cpp",
-        "COBOL-Dokumentation",
+        "Legacy-Code",
         "Wartungsdokumentation",
         "LLM-Benchmark",
         "Voreinstellung",
@@ -58,7 +58,7 @@ export const posts = [
 - **Denken ganz abschalten kostet mehr, als es spart.** \`low\` und \`medium\` erreichen rund die **2,5-fache** Abdeckung gegenüber „Denken aus".
 - **Die Stufe gehört ausdrücklich gesetzt.** Nicht, weil eine bestimmte die richtige wäre, sondern weil die Vorgabe eine Entscheidung ist, die sonst niemand trifft.
 
-Gemessen haben wir nicht an einem Testsatz, sondern an echter Arbeit: Wartungsdokumentation für ein COBOL-Programm mit rund 4.000 Zeilen, über ein Wochenende, auf zwei Maschinen mit zwei verschiedenen Inferenz-Motoren.
+Gemessen haben wir nicht an einem Testsatz, sondern an echter Arbeit: Wartungsdokumentation für ein gewachsenes Legacy-Programm mit rund 4.000 Zeilen, über ein Wochenende, auf zwei Maschinen mit zwei verschiedenen Inferenz-Motoren.
 
 ## Wie hier gemessen wurde, und woran
 
@@ -185,7 +185,7 @@ Das ist der eigentliche Befund hinter den Zahlen. Nicht, dass eine bestimmte Stu
       title: "Thinking levels measured: the default loses",
       articleSection: "Local LLMs",
       excerpt:
-        "The factory default xhigh produced zero usable answers in 20 runs. Measured against real maintenance documentation for a 4,000-line COBOL program.",
+        "The factory default xhigh produced zero usable answers in 20 runs. Measured against real maintenance documentation for a 4,000-line legacy program.",
       coverAlt:
         "A large industrial rotary dial in brushed steel on a steel panel, turned fully clockwise to its stop: a short orange mark points at a raised end stop on the right of the dial, and one plain unmarked detent is visible on the bezel to the left. A narrow orange line runs along the bottom",
       tags: [
@@ -194,7 +194,7 @@ Das ist der eigentliche Befund hinter den Zahlen. Nicht, dass eine bestimmte Stu
         "local LLMs",
         "Qwen3.8",
         "llama.cpp",
-        "COBOL documentation",
+        "legacy code",
         "maintenance documentation",
         "LLM benchmark",
         "default settings",
@@ -212,7 +212,7 @@ Das ist der eigentliche Befund hinter den Zahlen. Nicht, dass eine bestimmte Stu
 - **Turning thinking off costs more than it saves.** \`low\` and \`medium\` reach roughly **2.5 times** the coverage of thinking-off.
 - **The level belongs in your configuration explicitly.** Not because one particular level is right, but because the default is a decision nobody else is making for your work.
 
-We did not measure against a test set but against real work: maintenance documentation for a COBOL program of roughly 4,000 lines, over a weekend, on two machines with two different inference engines.
+We did not measure against a test set but against real work: maintenance documentation for a grown legacy program of roughly 4,000 lines, over a weekend, on two machines with two different inference engines.
 
 ## How this was measured, and against what
 
