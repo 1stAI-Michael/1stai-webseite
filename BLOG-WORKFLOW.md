@@ -125,7 +125,23 @@ Regeln, die der Check erzwingt:
   keine
 
 `slug` ist für beide Sprachen identisch, lowercase-kebab-case, und steckt in der
-URL `/{de,en}/blog/<slug>/`. Bei englischsprachigen Slugs liest sich beides gut.
+URL `/{de,en}/blog/<slug>/`.
+
+**Neue Slugs sind englisch** (Michael-Entscheid 19.10.2026). Grund ist die eine
+URL für zwei Sprachen: Ein deutscher Slug führt die englische Fassung unter einer
+Adresse, die ihr Leser nicht lesen kann — aufgefallen an
+`/en/blog/agenten-stille-sieht-aus-wie-erfolg/`. Umgekehrt stört ein englischer
+Slug an der deutschen Fassung niemanden.
+
+**Die vier bestehenden deutschen Slugs bleiben.** Sie sind seit Wochen live und
+bei Suchmaschinen bekannt; auf dem Webspace liegt derzeit kein Weiterleitungs-Weg,
+eine Umstellung bräche also vier Adressen. Wer sie doch angleichen will, baut
+zuerst die Weiterleitung und misst, dass sie greift — eigener Vorgang.
+
+⚠️ **Der Check erzwingt das nicht.** Ein deutscher Slug ist technisch so gültig
+wie ein englischer, und „klingt deutsch" ist nichts, was ein Muster zuverlässig
+erkennt — eine Prüfung, die bei jedem zweiten Titel danebenliegt, wird abgeschaltet
+statt befolgt. Es bleibt eine Regel, die beim Anlegen gilt.
 
 JSON-LD wird **generiert** (`src/lib/blogSchema.js`): BlogPosting + FAQPage +
 BreadcrumbList, `wordCount` aus dem Text gezählt. Nie von Hand schreiben.
