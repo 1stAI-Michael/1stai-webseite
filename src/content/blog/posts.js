@@ -20,6 +20,324 @@
 export const posts = [
   // Newest first. Add new posts at the TOP of this array.
   {
+    slug: "local-llm-reasoning-effort-measured",
+    date: "2026-10-19",
+    updated: "2026-10-19",
+    author: "Claude (Opus 5)",
+    coAuthor: "Michael Schiffer",
+    aiGenerated: true,
+    coverAiGenerated: true,
+    de: {
+      title: "Denkstufen nachgemessen: die Vorgabe verliert",
+      articleSection: "Lokale LLMs",
+      excerpt:
+        "Die Werksvorgabe xhigh lieferte in 20 Läufen null verwertbare Antworten. Gemessen an echter Wartungsdokumentation für ein COBOL-Programm mit 4.000 Zeilen.",
+      coverAlt:
+        "PROVISORISCH — nach dem Rendern am Cover schreiben",
+      tags: [
+        "Denkstufen",
+        "Reasoning Effort",
+        "lokale LLMs",
+        "Qwen3.8",
+        "llama.cpp",
+        "COBOL-Dokumentation",
+        "Wartungsdokumentation",
+        "LLM-Benchmark",
+        "Voreinstellung",
+        "Sampler",
+        "Temperatur",
+        "On-Premise-LLM",
+      ],
+      bodyMarkdown: `Wer bei einem lokalen Reasoning-Modell nichts einstellt, bekommt die höchste Denkstufe — und bei uns war das die einzige, die **gar nichts** lieferte. In 20 Läufen auf der Werksvorgabe \`xhigh\` kam **null Mal** eine verwertbare Antwort heraus. Nicht eine schlechte, sondern keine: Das Modell verbrauchte sein Ausgabebudget im Denken und kam nie zum Ergebnis. Dieselbe Arbeit auf \`low\` lief durch.
+
+**Auf einen Blick:**
+
+- **Die Vorgabe ist die schlechteste Wahl.** \`xhigh\` ist bei Qwen3.8-27B der Standard, wenn man nichts setzt — in unserem Aufbau: 0 von 20 verwertbaren Antworten.
+- **\`low\` und \`medium\` sind nicht unterscheidbar.** Der Abstand liegt bei 1,3 Standardfehlern. Das heißt nicht „gleich gut", es heißt: Wir können keinen Unterschied belegen.
+- **\`low\` ist 10 Prozent schneller**, und *dieser* Unterschied ist belegt (3,2 Standardfehler).
+- **Denken ganz abschalten kostet mehr, als es spart.** \`low\` und \`medium\` erreichen rund die **2,5-fache** Abdeckung gegenüber „Denken aus".
+- **Die Stufe gehört ausdrücklich gesetzt.** Nicht, weil eine bestimmte die richtige wäre, sondern weil die Vorgabe eine Entscheidung ist, die sonst niemand trifft.
+
+Gemessen haben wir nicht an einem Testsatz, sondern an echter Arbeit: Wartungsdokumentation für ein COBOL-Programm mit rund 4.000 Zeilen, über ein Wochenende, auf zwei Maschinen mit zwei verschiedenen Inferenz-Motoren.
+
+## Wie hier gemessen wurde, und woran
+
+Das Maß ist nicht „liest sich gut", sondern nachzählbar: **der Anteil der Programm-Bezeichner, die in der erzeugten Dokumentation tatsächlich vorkommen** — nennen wir es Abdeckung. Dazu kommt die Zahl der vollständigen Antworten, also derjenigen, die überhaupt ein Ende erreichen.
+
+Beides lässt sich ohne Geschmacksurteil auszählen, und beides fällt auseinander: Eine Antwort kann sprachlich tadellos sein und die Hälfte der Bezeichner übergehen. Wer solche Modelle nach Gefühl vergleicht, misst die Oberfläche.
+
+Die Stufen heißen bei diesem Modell \`low\`, \`medium\` und \`xhigh\`, dazu lässt sich das Denken abschalten. **Ein \`high\` gibt es nicht** — die Vorlage des Modells weist es ab, obwohl der Inferenz-Motor den Wert kennt. Das ist eine Stolperstelle für sich: Der Fehler kommt erst zur Laufzeit.
+
+## Warum die Vorgabe null verwertbare Antworten liefert
+
+\`xhigh\` ist nicht „zu gründlich". Es ist in diesem Aufbau schlicht **nicht fertig geworden**.
+
+Der Mechanismus ist einfach und unangenehm: Denk-Token und Antwort-Token teilen sich dasselbe Budget. Je höher die Stufe, desto mehr davon fließt in das Nachdenken — und wenn die Grenze erreicht ist, bricht die Ausgabe ab, bevor eine Antwort beginnt. Das Modell hat dann sauber gearbeitet und nichts geliefert.
+
+Das Unangenehme daran ist nicht die Zahl, sondern wer sie trifft: **Wer nichts einstellt, fährt genau diese Stufe.** Eine Voreinstellung ist eine Entscheidung, die der Hersteller für einen trifft — hier eine, die zum eigenen Aufbau passen muss und es bei uns nicht tat.
+
+Wir sind damit nicht allein. In der Modellkarte des Herstellers diskutieren Nutzer denselben Effekt unter der Überschrift, das Modell könne „nicht aufhören zu denken".
+
+## \`low\` gegen \`medium\`: kein belegter Unterschied, aber zehn Prozent
+
+Hier wird es für den Betrieb interessant, und hier ist die Versuchung groß, mehr zu behaupten, als dasteht.
+
+Der Abstand zwischen \`low\` und \`medium\` beträgt **1,3 Standardfehler**. Das ist kein Beleg für einen Unterschied — aber auch kein Beleg dafür, dass keiner existiert. Wer daraus „gleich gut" macht, hat aus einer fehlenden Messung eine Aussage gebaut. Richtig ist: **An unseren Daten lässt sich kein Unterschied zeigen.**
+
+Der Geschwindigkeitsvorteil dagegen ist belegt: \`low\` ist rund **10 Prozent schneller**, bei 3,2 Standardfehlern. Das ist der Unterschied zwischen „wir sehen nichts" und „wir sehen etwas" — und es lohnt, beide Sätze auseinanderzuhalten, weil nur einer davon trägt.
+
+Für die Praxis heißt das: Bei einem einzelnen Dokument kostet \`medium\` fast nichts und gibt die etwas gründlichere Stufe. Bei Stapelarbeit über viele Dokumente summieren sich die zehn Prozent zu echter Wartezeit.
+
+## Denken ganz abschalten kostet mehr, als es spart
+
+Die naheliegende Reaktion auf „die hohe Stufe bricht ab" ist, das Denken ganz abzuschalten. Gemessen ist das die zweitschlechteste Wahl: \`low\` und \`medium\` erreichen rund die **2,5-fache Abdeckung** gegenüber „Denken aus".
+
+Das passt zu dem, wofür wir es einsetzen. Wartungsdokumentation für ein gewachsenes Programm ist kein Nacherzählen — es ist Zusammentragen: Welcher Bezeichner wird wo gesetzt, welcher Zweig ist tot, welche Annahme steckt implizit in einer Berechnung. Genau diese Arbeit passiert im Denk-Kanal. Schaltet man ihn ab, bekommt man flüssigen Text über die ersten paar hundert Zeilen.
+
+## Die unbequeme Geschichte: eine Einstellung ohne Quelle
+
+Der zweite Befund handelt nicht vom Modell, sondern von uns.
+
+Wir fuhren seit Monaten mit einer Sampler-Temperatur von 0,2, weil irgendwann jemand gelesen hatte, höhere Werte führten bei langen Eingaben zu **Sprachdrift** — das Modell rutscht mitten im Text in eine andere Sprache. Als wir die Quelle dafür wiederfinden wollten, ließ sie sich **nicht auffinden**. Und schlimmer: Es gab eine eigene, frühere Messung, die dem widersprach. Die hatten wir schlicht vergessen.
+
+Zwei Gegenmessungen haben das aufgelöst. Zehn Läufe bei Temperatur 1,0 auf einem Prompt von rund **25.000 Token** ergaben **null fremdsprachige Zeichen**. Die Behauptung war nicht widerlegt worden — sie war nie belegt gewesen.
+
+Der übertragbare Teil hat nichts mit Temperatur zu tun: **Eine übernommene Einstellung ohne auffindbare Quelle ist eine Vermutung mit Zahlenwert.** Sie sieht aus wie Wissen, weil sie präzise ist. Und sie überlebt die eigene widersprechende Messung, weil niemand nachsieht — es läuft ja.
+
+## Der Messfehler, den wir nicht weggerechnet haben
+
+Ein Satz, der in einem Werbetext nicht stünde: **Unsere Anordnung hatte einen Fehler.**
+
+Die Durchläufe liefen **blockweise statt durchmischt**, und zwar auf einem Server-Prozess, der über das Wochenende älter wurde. Eine solche Anordnung kann Zeiteffekte mit Stufeneffekten verwechseln: Wenn der Prozess gegen Ende langsamer wird, trifft das die zuletzt gemessene Stufe — und sieht aus wie eine Eigenschaft der Stufe.
+
+Wir haben das im Bericht benannt, statt es herauszurechnen. Herausrechnen hätte eine Genauigkeit vorgetäuscht, die die Daten nicht hergeben. Für die 10 Prozent zwischen \`low\` und \`medium\` ist das ein echter Vorbehalt; für die 0 von 20 nicht, denn ein alternder Prozess erklärt keinen vollständigen Ausfall.
+
+## Was das praktisch heißt
+
+Vier Dinge, die sich heute umsetzen lassen:
+
+1. **Sehen Sie nach, welche Stufe Ihr Aufbau tatsächlich fährt.** Nicht welche Sie meinen — welche gesetzt ist. Steht nichts da, ist es die Vorgabe des Modells, und die ist bei Qwen3.8 die höchste.
+2. **Setzen Sie die Stufe ausdrücklich**, auch wenn Sie die Vorgabe wählen würden. Eine Einstellung, die dasteht, überlebt den nächsten Modellwechsel als Entscheidung; eine, die fehlt, ändert sich still mit.
+3. **Einzelne Dokumente \`medium\`, Stapelarbeit \`low\`.** Nie \`xhigh\` für Fließarbeit, und nie „Denken aus" für echte Dokumentation.
+4. **Messen Sie an Ihrer eigenen Arbeit**, nicht an einem Testsatz. Das Maß muss auszählbar sein — bei uns Bezeichner-Abdeckung und vollständige Antworten.
+
+## Grenzen
+
+Drei Dinge, die diese Messung **nicht** trägt:
+
+**Sie gilt für unseren Aufbau, nicht für das Modell.** Ein anderes Ausgabebudget, eine andere Vorlage, ein anderer Inferenz-Motor — und die 0 von 20 kann anders ausfallen. Der Satz „\`xhigh\` ist schlecht" stünde so nicht in den Daten; dort steht „\`xhigh\` lief bei unseren Einstellungen nicht durch".
+
+**Sie gilt für diese Art Arbeit.** Wartungsdokumentation über ein langes Programm ist Zusammentragen. Bei kurzen, scharf umrissenen Fragen kann die Rechnung anders ausgehen, weil das Budget dort nie knapp wird.
+
+**Die Stichprobe ist klein.** Ein Wochenende, zwei Maschinen, ein Programm. Die 2,5-fache Abdeckung und die 0 von 20 sind deutlich genug, um darauf zu handeln; die 10 Prozent zwischen \`low\` und \`medium\` sind es gerade so, und der Messfehler oben zielt genau darauf.
+
+## Fazit: die Frage kostet zwei Minuten
+
+Öffnen Sie die Konfiguration des Dienstes, über den Ihre lokalen Modelle laufen, und suchen Sie die Denkstufe. Finden Sie keine, haben Sie Ihre Antwort — dann fährt der Aufbau die Vorgabe des Modells, und die ist nicht für Ihre Arbeit gewählt worden, sondern für den Durchschnitt aller Arbeiten.
+
+Das ist der eigentliche Befund hinter den Zahlen. Nicht, dass eine bestimmte Stufe die richtige wäre. Sondern dass die teuerste Einstellung die ist, die niemand getroffen hat.`,
+      faq: [
+        {
+          q: "Welche Denkstufe sollte man bei einem lokalen LLM einstellen?",
+          a: "Bei unseren Messungen an Wartungsdokumentation: einzelne Dokumente medium, Stapelarbeit low, nie xhigh und nie ganz ohne Denken. Wichtiger als die Wahl ist, dass die Stufe ueberhaupt ausdruecklich dasteht. Wer nichts setzt, faehrt die Vorgabe des Modells — bei Qwen3.8 ist das xhigh, also die hoechste Stufe, und die lieferte bei uns in 20 Laeufen keine einzige verwertbare Antwort.",
+        },
+        {
+          q: "Warum liefert die hoechste Denkstufe gar keine Antwort?",
+          a: "Denk-Token und Antwort-Token teilen sich dasselbe Ausgabebudget. Je hoeher die Stufe, desto mehr davon geht ins Nachdenken; ist die Grenze erreicht, bricht die Ausgabe ab, bevor eine Antwort beginnt. Das Modell scheitert dabei nicht sichtbar — es arbeitet sauber und liefert nichts. Wie knapp das wird, haengt am eigenen Aufbau: Budget, Vorlage und Inferenz-Motor entscheiden mit.",
+        },
+        {
+          q: "Was ist Reasoning Effort und wo stellt man ihn ein?",
+          a: "Reasoning Effort steuert, wie viel ein Reasoning-Modell nachdenkt, bevor es antwortet. Bei Qwen3.8 gibt es drei Stufen — low, medium und xhigh —, dazu laesst sich das Denken abschalten. Gesetzt wird der Wert ueber die Chat-Vorlage, nicht als gewoehnlicher Aufruf-Parameter. Ein high gibt es bei diesem Modell nicht: Der Inferenz-Motor kennt den Wert, die Vorlage des Modells weist ihn ab — der Fehler zeigt sich erst zur Laufzeit.",
+        },
+        {
+          q: "Lohnt es sich, das Denken ganz abzuschalten?",
+          a: "Fuer echte Dokumentationsarbeit nicht. Gemessen erreichen low und medium rund die 2,5-fache Abdeckung gegenueber abgeschaltetem Denken. Der Grund liegt in der Aufgabe: Dokumentation fuer ein gewachsenes Programm ist Zusammentragen — welcher Bezeichner wird wo gesetzt, welcher Zweig ist tot. Genau das passiert im Denk-Kanal. Ohne ihn entsteht fluessiger Text ueber die ersten paar hundert Zeilen.",
+        },
+        {
+          q: "Woran misst man, ob ein lokales Modell gute Dokumentation schreibt?",
+          a: "Nicht am Eindruck, sondern an etwas Auszaehlbarem. Wir nehmen den Anteil der Programm-Bezeichner, die in der erzeugten Dokumentation vorkommen, und zusaetzlich die Zahl der vollstaendigen Antworten. Beides faellt auseinander: Ein Text kann sprachlich tadellos sein und die Haelfte der Bezeichner uebergehen. Tokens pro Sekunde sagen darueber gar nichts.",
+        },
+      ],
+      sources: [
+        {
+          title: "Qwen3.8-27B — Modellkarte, Diskussion „This model cannot stop thinking“",
+          url: "https://huggingface.co/Qwen/Qwen3.8-27B/discussions/113",
+        },
+        {
+          title: "Qwen — Qwen3.8",
+          url: "https://qwen.ai/blog?id=qwen3.8",
+        },
+        {
+          title: "The Kaitchup — Qwen3.8 27B Reasoning Benchmarks: Off vs Low vs Medium vs Xhigh",
+          url: "https://kaitchup.substack.com/p/qwen38-27b-reasoning-benchmarks-off",
+        },
+        {
+          title: "Sebastian Raschka — Controlling Reasoning Effort in LLMs",
+          url: "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+        },
+        {
+          title: "Universität Paderborn — Reasoning in LLMs: Modelle, Reasoning-Level und Konfiguration",
+          url: "https://hilfe.uni-paderborn.de/Reasoning_in_LLMs:_Modelle,_Reasoning-Level_und_Konfiguration",
+        },
+      ],
+    },
+    en: {
+      title: "Thinking levels measured: the default loses",
+      articleSection: "Local LLMs",
+      excerpt:
+        "The factory default xhigh produced zero usable answers in 20 runs. Measured against real maintenance documentation for a 4,000-line COBOL program.",
+      coverAlt:
+        "PROVISIONAL — write from the rendered cover",
+      tags: [
+        "thinking levels",
+        "reasoning effort",
+        "local LLMs",
+        "Qwen3.8",
+        "llama.cpp",
+        "COBOL documentation",
+        "maintenance documentation",
+        "LLM benchmark",
+        "default settings",
+        "sampler",
+        "temperature",
+        "on-premise LLM",
+      ],
+      bodyMarkdown: `Set nothing on a local reasoning model and you get the highest thinking level — and in our setup that was the only one that delivered **nothing at all**. Across 20 runs on the factory default \`xhigh\`, a usable answer came out **zero times**. Not a poor one: none. The model spent its output budget on thinking and never reached a result. The same work on \`low\` ran through.
+
+**At a glance:**
+
+- **The default is the worst choice.** \`xhigh\` is what Qwen3.8-27B uses when you set nothing — in our setup: 0 usable answers out of 20.
+- **\`low\` and \`medium\` are not distinguishable.** The gap sits at 1.3 standard errors. That does not mean "equally good", it means we cannot show a difference.
+- **\`low\` is 10 percent faster**, and *that* difference is established (3.2 standard errors).
+- **Turning thinking off costs more than it saves.** \`low\` and \`medium\` reach roughly **2.5 times** the coverage of thinking-off.
+- **The level belongs in your configuration explicitly.** Not because one particular level is right, but because the default is a decision nobody else is making for your work.
+
+We did not measure against a test set but against real work: maintenance documentation for a COBOL program of roughly 4,000 lines, over a weekend, on two machines with two different inference engines.
+
+## How this was measured, and against what
+
+The measure is not "reads well" but something countable: **the share of program identifiers that actually appear in the generated documentation** — call it coverage. Alongside it, the number of complete answers, meaning those that reach an end at all.
+
+Both can be counted without a judgement call, and the two come apart: an answer can be linguistically flawless and skip half the identifiers. Comparing such models by feel measures the surface.
+
+On this model the levels are \`low\`, \`medium\` and \`xhigh\`, plus thinking can be switched off. **There is no \`high\`** — the model's template rejects it even though the inference engine knows the value. That is a trap in itself: the error only shows at runtime.
+
+## Why the default delivers zero usable answers
+
+\`xhigh\` is not "too thorough". In this setup it simply **never finished**.
+
+The mechanism is simple and uncomfortable: thinking tokens and answer tokens share one budget. The higher the level, the more of it goes into deliberation — and when the limit is reached, output stops before an answer begins. The model worked cleanly and delivered nothing.
+
+The uncomfortable part is not the number but who it hits: **set nothing and you run exactly that level.** A default is a decision the vendor makes for you — here one that has to fit your own setup, and in ours it did not.
+
+We are not alone in this. On the vendor's model card, users discuss the same effect under the heading that the model "cannot stop thinking".
+
+## \`low\` against \`medium\`: no established difference, but ten percent
+
+This is where it gets operationally interesting, and where the temptation is strong to claim more than the data holds.
+
+The gap between \`low\` and \`medium\` is **1.3 standard errors**. That is no evidence of a difference — but no evidence that none exists either. Turning it into "equally good" builds a statement out of a missing measurement. What is correct: **our data cannot show a difference.**
+
+The speed advantage, by contrast, is established: \`low\` is about **10 percent faster**, at 3.2 standard errors. That is the difference between "we see nothing" and "we see something" — and the two sentences are worth keeping apart, because only one of them carries.
+
+In practice: for a single document, \`medium\` costs almost nothing and buys the slightly more thorough level. Across a batch of many documents, those ten percent add up to real waiting time.
+
+## Turning thinking off costs more than it saves
+
+The obvious reaction to "the high level breaks off" is to switch thinking off entirely. Measured, that is the second-worst choice: \`low\` and \`medium\` reach roughly **2.5 times the coverage** of thinking-off.
+
+That fits what we use it for. Maintenance documentation for a grown program is not retelling — it is gathering: which identifier is set where, which branch is dead, which assumption sits implicitly inside a calculation. Exactly that work happens in the thinking channel. Switch it off and you get fluent prose about the first few hundred lines.
+
+## The uncomfortable story: a setting with no source
+
+The second finding is not about the model but about us.
+
+For months we ran a sampler temperature of 0.2, because at some point somebody had read that higher values cause **language drift** on long inputs — the model slipping into another language mid-text. When we went looking for that source, it **could not be found**. Worse: there was an earlier measurement of our own that contradicted it. We had simply forgotten it.
+
+Two counter-measurements settled it. Ten runs at temperature 1.0 on a prompt of roughly **25,000 tokens** produced **zero foreign-language characters**. The claim had not been refuted — it had never been established.
+
+The transferable part has nothing to do with temperature: **an adopted setting with no traceable source is a guess with a numeric value.** It looks like knowledge because it is precise. And it survives your own contradicting measurement, because nobody goes looking — it is running, after all.
+
+## The flaw we did not compute away
+
+A sentence that would not appear in marketing copy: **our arrangement had a flaw.**
+
+The runs went **in blocks rather than interleaved**, on a server process that grew older across the weekend. Such an arrangement can confuse time effects with level effects: if the process slows towards the end, that hits whichever level was measured last — and looks like a property of the level.
+
+We named it in the report instead of computing it away. Computing it away would have feigned a precision the data does not support. For the 10 percent between \`low\` and \`medium\` this is a genuine caveat; for the 0 out of 20 it is not, because an ageing process does not explain a total failure.
+
+## What this means in practice
+
+Four things you can act on today:
+
+1. **Check which level your setup actually runs.** Not the one you believe — the one that is set. If nothing is there, it is the model's default, and on Qwen3.8 that is the highest.
+2. **Set the level explicitly**, even if you would choose the default. A setting that is written down survives the next model change as a decision; one that is missing changes silently along with it.
+3. **Single documents \`medium\`, batch work \`low\`.** Never \`xhigh\` for throughput work, and never thinking-off for real documentation.
+4. **Measure against your own work**, not a test set. The measure has to be countable — for us, identifier coverage and complete answers.
+
+## Limits
+
+Three things this measurement does **not** support:
+
+**It holds for our setup, not for the model.** A different output budget, a different template, a different inference engine — and the 0 out of 20 may come out otherwise. The sentence "\`xhigh\` is bad" is not in the data; what is in the data is "\`xhigh\` did not run through at our settings".
+
+**It holds for this kind of work.** Maintenance documentation across a long program is gathering. For short, sharply bounded questions the arithmetic may differ, because the budget never gets tight there.
+
+**The sample is small.** One weekend, two machines, one program. The 2.5-fold coverage and the 0 out of 20 are clear enough to act on; the 10 percent between \`low\` and \`medium\` only barely are, and the flaw above aims at precisely that.
+
+## Conclusion: the question costs two minutes
+
+Open the configuration of whatever serves your local models and look for the thinking level. If you find none, you have your answer — the setup is running the model's default, and that was not chosen for your work but for the average of all work.
+
+That is the real finding behind the numbers. Not that one particular level is right. But that the most expensive setting is the one nobody chose.`,
+      faq: [
+        {
+          q: "Which thinking level should you set on a local LLM?",
+          a: "From our measurements on maintenance documentation: medium for single documents, low for batch work, never xhigh and never thinking-off. More important than the choice is that the level is written down at all. Set nothing and you run the model's default — on Qwen3.8 that is xhigh, the highest level, and in our setup it produced not one usable answer across 20 runs.",
+        },
+        {
+          q: "Why does the highest thinking level produce no answer at all?",
+          a: "Thinking tokens and answer tokens share one output budget. The higher the level, the more of it goes into deliberation; once the limit is hit, output stops before an answer begins. The model does not fail visibly — it works cleanly and delivers nothing. How tight this gets depends on your own setup: budget, template and inference engine all play a part.",
+        },
+        {
+          q: "What is reasoning effort and where do you set it?",
+          a: "Reasoning effort controls how much a reasoning model deliberates before answering. Qwen3.8 has three levels — low, medium and xhigh — plus the option to switch thinking off. The value is set through the chat template, not as an ordinary call parameter. There is no high on this model: the inference engine knows the value, the model's template rejects it — and the error only shows at runtime.",
+        },
+        {
+          q: "Is it worth switching thinking off entirely?",
+          a: "Not for real documentation work. Measured, low and medium reach roughly 2.5 times the coverage of thinking-off. The reason lies in the task: documenting a grown program is gathering — which identifier is set where, which branch is dead. That is exactly what happens in the thinking channel. Without it you get fluent prose about the first few hundred lines.",
+        },
+        {
+          q: "How do you measure whether a local model writes good documentation?",
+          a: "Not by impression but by something countable. We use the share of program identifiers that appear in the generated documentation, plus the number of complete answers. The two come apart: a text can be linguistically flawless and skip half the identifiers. Tokens per second say nothing about either.",
+        },
+      ],
+      sources: [
+        {
+          title: "Qwen3.8-27B — Modellkarte, Diskussion „This model cannot stop thinking“",
+          url: "https://huggingface.co/Qwen/Qwen3.8-27B/discussions/113",
+        },
+        {
+          title: "Qwen — Qwen3.8",
+          url: "https://qwen.ai/blog?id=qwen3.8",
+        },
+        {
+          title: "The Kaitchup — Qwen3.8 27B Reasoning Benchmarks: Off vs Low vs Medium vs Xhigh",
+          url: "https://kaitchup.substack.com/p/qwen38-27b-reasoning-benchmarks-off",
+        },
+        {
+          title: "Sebastian Raschka — Controlling Reasoning Effort in LLMs",
+          url: "https://magazine.sebastianraschka.com/p/controlling-reasoning-effort-in-llms",
+        },
+        {
+          title: "Universität Paderborn — Reasoning in LLMs: Modelle, Reasoning-Level und Konfiguration",
+          url: "https://hilfe.uni-paderborn.de/Reasoning_in_LLMs:_Modelle,_Reasoning-Level_und_Konfiguration",
+        },
+      ],
+    },
+    draft: true,
+  },
+  {
     slug: "experience-beats-talent-systeme-mitdenken",
     date: "2026-09-23",
     updated: "2026-09-23",
