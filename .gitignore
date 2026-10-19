@@ -13,7 +13,7 @@ out/
 # ins Repo veroeffentlichungs-schutz, und fuer git ist ein Verweis eine Datei.
 # `blog-drafts/` haette nur das Verzeichnis gefangen und den Verweis committet.
 #
-# blog-inbox GANZ draussen, seit 19.10.2026 (fA-1143, Michael-Entscheid).
+# blog-inbox GANZ draussen, seit 19.10.2026 (Michael-Entscheid).
 # Vorher war `!blog-inbox/*/prompts.md` ausgenommen, damit die Bild-Auftraege
 # der Reproduzierbarkeit wegen mitlaufen. Der Preis dafuer war unsichtbar: Das
 # Leck-Gate prueft Beitraege, nicht dieses Verzeichnis — die Dateien gingen also

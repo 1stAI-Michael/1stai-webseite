@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * fA-1234 — `<html lang>` je Seite richtigstellen, nach dem Export.
+ * `<html lang>` je Seite richtigstellen, nach dem Export.
  *
  * Warum ein Nachlauf und keine Korrektur im Layout: Das `<html>`-Element darf in
  * Next.js nur im Wurzel-Layout stehen, und das Wurzel-Layout kennt das
