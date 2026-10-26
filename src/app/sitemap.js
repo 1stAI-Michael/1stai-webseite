@@ -43,5 +43,11 @@ export default function sitemap() {
     changeFrequency: "monthly",
     priority: 0.5,
   });
+  entries.push({
+    url: `${siteConfig.url}/dane-przedsiebiorcy/`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.5,
+  });
   return entries;
 }

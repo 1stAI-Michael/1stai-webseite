@@ -52,6 +52,8 @@ export default async function ImprintPage({ params }) {
         <br />
         REGON: {legal.regon}
         <br />
+        {lang === "de" ? "USt-IdNr. (VAT UE)" : "VAT UE"}: {legal.vatUe}
+        <br />
         {legal.vatRegime}
       </p>
 

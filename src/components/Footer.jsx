@@ -10,7 +10,7 @@ export default function Footer({ lang = "en" }) {
       <div className="font-mono text-[11px] leading-relaxed">
         {siteConfig.name} · {address.street}, {address.city}, {address.country}
         <br />
-        {tr.footer.legal} · NIP: {siteConfig.legal.nip}
+        {tr.footer.legal} · NIP: {siteConfig.legal.nip} · REGON: {siteConfig.legal.regon}
       </div>
       <div className="flex flex-wrap gap-4 items-center">
         <a href={`mailto:${email}`} className="hover:text-primary">{email}</a>
@@ -18,6 +18,7 @@ export default function Footer({ lang = "en" }) {
         <Link href={`/${lang}/impressum/`} className="hover:text-primary">{tr.footer.links.imprint}</Link>
         <Link href={`/${lang}/${lang === "de" ? "datenschutz" : "privacy"}/`} className="hover:text-primary">{tr.footer.links.privacy}</Link>
         <a href="/polityka-prywatnosci/" className="hover:text-primary" hrefLang="pl">{tr.footer.links.privacyPl}</a>
+        <a href="/dane-przedsiebiorcy/" className="hover:text-primary" hrefLang="pl">{tr.footer.links.imprintPl}</a>
         {siteConfig.family.map((f) => (
           <a key={f.url} href={f.url} target="_blank" rel="noopener" className="hover:text-primary">
             {f.name}

@@ -19,16 +19,23 @@ export const siteConfig = {
       country: "Polska",
     },
   },
+  // Quelle: CEIDG-Ausdruck vom 18.10.2026 und VAT-5UE vom 21.10.2026
+  // (US Środa Śląska). Pruefziffern von NIP und REGON nachgerechnet.
   legal: {
-    form: "JDG (jednoosobowa działalność gospodarcza) — in Gründung",
-    formEn: "JDG (Polish sole proprietorship) — registration in progress",
+    form: "JDG (jednoosobowa działalność gospodarcza), eingetragen im CEIDG",
+    formEn: "JDG (Polish sole proprietorship), registered with CEIDG",
     ceidgStatus: {
-      de: "CEIDG-Registrierung in Vorbereitung, geplant Q3/Q4 2026",
-      en: "CEIDG registration in preparation, scheduled for Q3/Q4 2026",
+      de: "Tätigkeitsbeginn: 2. November 2026",
+      en: "Start of activity: 2 November 2026",
     },
-    nip: "pending CEIDG",
-    regon: "pending CEIDG",
-    vatRegime: "Podatek liniowy 19 %, VAT-UE (po rejestracji CEIDG)",
+    nip: "9131646486",
+    regon: "545934189",
+    // Auf Michaels Ansage vom 26.10.2026 veroeffentlicht. VIES wies die Nummer
+    // an diesem Tag noch zurueck (isValid: false, 17:18 UTC); die Eintragung
+    // wirkt vermutlich ab 10.11.2026. Ab dann ist die Zeile auch von aussen
+    // pruefbar — vorher nicht.
+    vatUe: "PL9131646486",
+    vatRegime: "Podatek liniowy 19 %",
   },
   family: [
     { name: "schifferm.de", url: "https://schifferm.de" },

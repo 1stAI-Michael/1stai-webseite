@@ -21,8 +21,8 @@ const dict = {
       feedTitle: "1stAI Blog — English",
     },
     footer: {
-      legal: "JDG · Registration in progress (Q3/Q4 2026)",
-      links: { imprint: "Imprint", contact: "Contact", privacy: "Privacy", privacyPl: "Polityka prywatności (PL)" },
+      legal: "JDG · registered with CEIDG",
+      links: { imprint: "Imprint", contact: "Contact", privacy: "Privacy", privacyPl: "Polityka prywatności (PL)", imprintPl: "Dane przedsiębiorcy (PL)" },
       family: "Family brands",
     },
     home: {
@@ -89,8 +89,8 @@ const dict = {
       feedTitle: "1stAI Blog — Deutsch",
     },
     footer: {
-      legal: "JDG · Registrierung in Vorbereitung (Q3/Q4 2026)",
-      links: { imprint: "Impressum", contact: "Kontakt", privacy: "Datenschutz", privacyPl: "Polityka prywatności (PL)" },
+      legal: "JDG · im CEIDG eingetragen",
+      links: { imprint: "Impressum", contact: "Kontakt", privacy: "Datenschutz", privacyPl: "Polityka prywatności (PL)", imprintPl: "Dane przedsiębiorcy (PL)" },
       family: "Schwester-Marken",
     },
     home: {

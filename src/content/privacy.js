@@ -3,7 +3,11 @@
 // Update when adding any of: forms, analytics, embedded media, newsletter.
 import { siteConfig } from "../lib/site";
 
-const { contact, name } = siteConfig;
+const { contact, name, legal } = siteConfig;
+// NIP und REGON gehoeren in den Verantwortlichen-Block: Sie identifizieren den
+// Verantwortlichen eindeutig, und ohne sie ist er fuer eine Aufsichtsbehoerde
+// nur ueber den Namen auffindbar. Ergaenzt am 26.10.2026, nachdem die
+// CEIDG-Eintragung vorlag (fA-1652).
 const adminBlock = (lang) => {
   const lines = [
     name,
@@ -11,6 +15,8 @@ const adminBlock = (lang) => {
     contact.address.street,
     contact.address.city,
     contact.address.country,
+    `NIP: ${legal.nip}`,
+    `REGON: ${legal.regon}`,
     `E-Mail: ${contact.email}`,
     `${lang === "de" ? "Telefon" : lang === "pl" ? "Telefon" : "Phone"}: ${contact.phone}`,
   ];
@@ -61,7 +67,7 @@ export const privacy = {
         b: "Diese Datenschutzerklärung wird angepasst, sobald sich die tatsächliche Datenverarbeitung ändert (z. B. Einbindung von Analyse, Kontaktformular, Newsletter).",
       },
     ],
-    updated: "Stand: Juni 2026",
+    updated: "Stand: Oktober 2026",
   },
   en: {
     slug: "privacy",
@@ -106,7 +112,7 @@ export const privacy = {
         b: "This policy will be updated if actual data processing changes (e.g. introduction of analytics, contact forms or a newsletter).",
       },
     ],
-    updated: "Last updated: June 2026",
+    updated: "Last updated: October 2026",
   },
   pl: {
     slug: "polityka-prywatnosci",
@@ -151,6 +157,6 @@ export const privacy = {
         b: "Polityka będzie aktualizowana w przypadku zmiany faktycznego sposobu przetwarzania danych (np. wprowadzenie analityki, formularza kontaktowego lub newslettera).",
       },
     ],
-    updated: "Stan: czerwiec 2026",
+    updated: "Stan: październik 2026",
   },
 };
