@@ -1,4 +1,43 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+/* Schriften werden selbst ausgeliefert, nicht von Google geholt.
+ *
+ * Bis zum 28.10.2026 stand hier ein @import auf fonts.googleapis.com. Damit ging
+ * bei JEDEM Seitenaufruf die IP des Besuchers an Google — vor jeder Einwilligung
+ * und ohne dass es irgendwo stand. Die Datenschutzerklaerung behauptete zur
+ * gleichen Zeit woertlich "keine eingebetteten Inhalte Dritter" und "keine
+ * Datenuebermittlung in Drittlaender ausserhalb des EWR". Beide Saetze waren
+ * dadurch falsch.
+ *
+ * Gefunden wurde es NICHT durch Lesen: Eine Suche nach <link href=...> findet
+ * einen CSS-@import nicht. Sichtbar wurde er erst in einem Netzmitschnitt mit
+ * Kontrolllauf — Chrome spricht von sich aus mit etlichen Google-Diensten, und
+ * erst der Vergleich gegen einen Leerlauf zeigte, welcher Wirt wirklich von
+ * dieser Seite kam (fA-1652-Folgearbeit, Audit 28.10.2026).
+ *
+ * Die drei Dateien liegen in assets/fonts/ und werden nach public/fonts/
+ * kopiert. Es sind variable Schnitte mit Latin-Extended — die polnischen
+ * Zeichen in Anschrift und Rechtstexten brauchen das.
+ */
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-latin-ext.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-latin-ext.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-latin-ext.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+  font-style: normal;
+}
 
 @tailwind base;
 @tailwind components;

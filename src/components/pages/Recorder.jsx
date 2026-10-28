@@ -732,8 +732,27 @@ export default function Recorder() {
           </p>
         ) : null}
 
+        {/* Demo-Hinweis. Ein externes Audit hat am 28.10.2026 aus den Feldern
+            "Patient/ID" und "DOB" geschlossen, hier koennten Gesundheitsdaten
+            nach Art. 9 DSGVO verarbeitet werden — und die Datenschutzerklaerung
+            deckt das nicht ab. Der Schluss war nachvollziehbar und beruhte auf
+            dem, was die Seite ueber sich selbst sagte: naemlich nichts ueber
+            ihren Zweck. Das steht jetzt hier.
+            Michael-Entscheid 28.10.2026, technisch gegengeprueft: ohne Server-URL,
+            Device-ID und Bearer-Token aus einem Login geht nichts hinaus
+            (src/lib/api.js, uploadRecording/uploadTextOnly). Alle drei sind ab
+            Werk leer. */}
+        <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+          <strong>Demo-Werkzeug — keine echten Patientendaten eingeben.</strong> Dieser Recorder dient
+          Vorfuehrungen in Praxen. Er ist nicht fuer den allgemeinen oder produktiven Gebrauch bestimmt.
+          Verwenden Sie ausschliesslich erfundene Testangaben.
+        </p>
+
         <p className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-600">
-          Aufnahmen und Metadaten werden zuerst lokal auf diesem Geraet gespeichert. Uploads laufen erst nach Login und Geraetefreigabe gegen den konfigurierten Server.
+          Aufnahmen und Metadaten werden zuerst lokal auf diesem Geraet gespeichert und verlassen es nicht
+          von selbst. Ein Upload ist nur moeglich, wenn Server-Adresse, Geraete-Kennung und ein gueltiges
+          Zugangs-Token eingerichtet sind; ohne diese drei Angaben wird nichts uebertragen. Ab Werk ist
+          keine davon gesetzt.
         </p>
 
         <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
