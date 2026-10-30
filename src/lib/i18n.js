@@ -26,8 +26,8 @@ const dict = {
       family: "Family brands",
     },
     home: {
-      badgePrefix: "Now taking selected mandates for",
-      badgePeriod: "Q3/Q4 2026",
+      badgePrefix: "Open for new mandates from",
+      badgePeriod: "1 December 2026",
       heroPre: "AI consulting for teams",
       heroHighlight: "that ship.",
       sub: "Twenty years of industrial IT. Now applied to LLMs, agents, and the systems around them. Based in Lower Silesia (Wrocław / Legnica region), working across the EU.",
@@ -94,8 +94,8 @@ const dict = {
       family: "Schwester-Marken",
     },
     home: {
-      badgePrefix: "Mandate verfügbar für",
-      badgePeriod: "Q3/Q4 2026",
+      badgePrefix: "Offen für neue Mandate ab",
+      badgePeriod: "1. Dezember 2026",
       heroPre: "KI-Beratung für Teams,",
       heroHighlight: "die liefern.",
       sub: "Zwanzig Jahre industrielle IT. Jetzt angewendet auf LLMs, Agenten und die Systeme drumherum. Sitz in Niederschlesien (Region Breslau / Legnica), tätig EU-weit.",

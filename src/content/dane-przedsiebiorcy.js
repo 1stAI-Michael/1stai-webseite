@@ -42,7 +42,6 @@ export const danePrzedsiebiorcy = {
         `NIP: ${legal.nip}`,
         `REGON: ${legal.regon}`,
         `VAT UE: ${legal.vatUe}`,
-        legal.vatRegime,
       ].join("\n"),
     },
     {

@@ -35,7 +35,6 @@ export const siteConfig = {
     // wirkt vermutlich ab 10.11.2026. Ab dann ist die Zeile auch von aussen
     // pruefbar — vorher nicht.
     vatUe: "PL9131646486",
-    vatRegime: "Podatek liniowy 19 %",
   },
   family: [
     { name: "schifferm.de", url: "https://schifferm.de" },
