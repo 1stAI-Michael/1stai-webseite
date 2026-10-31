@@ -53,7 +53,7 @@ export const privacy = {
       },
       {
         h: "6. Empfänger und Auftragsverarbeitung",
-        b: "Hosting: Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Deutschland — auf Grundlage eines Auftragsverarbeitungsvertrags. Eine Datenübermittlung in Drittländer außerhalb des EWR findet nicht statt.",
+        b: "Hosting und E-Mail: Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Deutschland — auf Grundlage eines Auftragsverarbeitungsvertrags. Website und Postfächer laufen über dasselbe Paket desselben Anbieters; eingehende E-Mail-Korrespondenz wird also von demselben Auftragsverarbeiter verarbeitet. Weitere Empfänger gibt es nicht. Eine Datenübermittlung in Drittländer außerhalb des EWR findet nicht statt.",
       },
       {
         h: "7. Speicherdauer",
@@ -103,7 +103,7 @@ export const privacy = {
       },
       {
         h: "6. Recipients and processors",
-        b: "Hosting: Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Germany — under a data processing agreement. No transfer of personal data to third countries outside the EEA occurs.",
+        b: "Hosting and email: Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Germany — under a data processing agreement. The website and the mailboxes run on the same package from the same provider, so incoming email correspondence is processed by that same processor. There are no further recipients. No transfer of personal data to third countries outside the EEA occurs.",
       },
       {
         h: "7. Retention",
@@ -153,7 +153,7 @@ export const privacy = {
       },
       {
         h: "6. Odbiorcy i procesorzy",
-        b: "Hosting: Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Niemcy — na podstawie umowy powierzenia przetwarzania danych. Dane nie są przekazywane do państw trzecich poza EOG.",
+        b: "Hosting i poczta e-mail: Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, Niemcy — na podstawie umowy powierzenia przetwarzania danych. Strona i skrzynki pocztowe działają w ramach tego samego pakietu u tego samego dostawcy, więc przychodzącą korespondencję e-mailową przetwarza ten sam podmiot przetwarzający. Nie ma innych odbiorców. Dane nie są przekazywane do państw trzecich poza EOG.",
       },
       {
         h: "7. Okres przechowywania",
