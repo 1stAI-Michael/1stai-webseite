@@ -1,9 +1,13 @@
 // Regulamin świadczenia usług drogą elektroniczną (uswude art. 8).
 //
 // ⚠️ NICHT ANWALTLICH GEPRÜFT. Michael-Entscheid 31.10.2026: bauen und sofort
-// veröffentlichen, ohne Prüfung durch Suchecki. Ich hatte davon abgeraten — ein
-// Rechtstext unter seinem Namen, den niemand mit Fachkenntnis gelesen hat.
-// Er hat nach dem Hinweis entschieden; das ist festgehalten, nicht verschwiegen.
+// veröffentlichen. Ich hatte davon abgeraten — ein Rechtstext unter seinem
+// Namen, den niemand mit Fachkenntnis gelesen hat. Er hat nach dem Hinweis
+// entschieden; das ist festgehalten, nicht verschwiegen.
+//
+// Eine Adresse für Medien- und IT-Recht ist bisher NICHT benannt. Ich hatte
+// hier zunächst den Steuerberater genannt — das war falsch (Michael-Korrektur
+// 31.10.2026). Wer diesen Text prüfen lassen will, fragt Michael, an wen.
 //
 // Der Text folgt eng dem Entwurf des externen Auditors vom 28.10.2026
 // (/mnt/austausch/1stAI_audit_01/, Abschnitt "Kurzer Regulamin-Entwurf"). Ich
