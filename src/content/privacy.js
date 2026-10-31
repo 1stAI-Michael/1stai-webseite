@@ -36,12 +36,12 @@ export const privacy = {
       },
       {
         h: "2. Erhobene Daten und Zwecke",
-        b: "Bei einer Kontaktaufnahme per E-Mail oder Telefon verarbeiten wir die von Ihnen mitgeteilten Daten (Name, Kontaktangaben, Inhalt der Nachricht) zum Zweck der Beantwortung Ihrer Anfrage und einer eventuellen Geschäftsanbahnung.\n\nBeim Aufruf der Website verarbeitet unser Hosting-Anbieter automatisch Server-Logdaten (IP-Adresse, Datum, Uhrzeit, abgerufene Ressource, Referrer, User-Agent). Diese Daten werden ausschließlich zur Bereitstellung des Dienstes und zur Abwehr technischer Angriffe verarbeitet und nach kurzer Frist gelöscht.",
+        b: "Bei einer Kontaktaufnahme per E-Mail oder Telefon verarbeiten wir die von Ihnen mitgeteilten Daten (Name, Kontaktangaben, Inhalt der Nachricht) zum Zweck der Beantwortung Ihrer Anfrage und einer eventuellen Geschäftsanbahnung.\n\nBeim Aufruf der Website verarbeitet unser Hosting-Anbieter automatisch Server-Logdaten (IP-Adresse, Datum, Uhrzeit, abgerufene Ressource, Referrer, User-Agent). Diese Daten werden ausschließlich zur Bereitstellung des Dienstes und zur Abwehr technischer Angriffe verarbeitet und nach sieben Tagen gelöscht.",
       },
       {
         h: "3. Recorder und HRV-Atemübung (Demo-Werkzeuge)",
         b:
-          "Unter /Recorder/ und /atemuebung/ stehen zwei interaktive Werkzeuge bereit.\n\nDer **Recorder ist ein Demonstrationswerkzeug für Vorführungen in Praxen** und nicht für den allgemeinen oder produktiven Gebrauch bestimmt. Es sind ausschließlich erfundene Testangaben einzugeben; echte Patientendaten gehören nicht hinein. Aufnahmen und die optionalen Felder (Kennung, Geburtsdatum, Thema) werden im Browser des Geräts gespeichert und verlassen es nicht von selbst. Eine Übertragung an einen Server ist technisch nur möglich, wenn Server-Adresse, Geräte-Kennung und ein gültiges Zugangs-Token eingerichtet sind — ab Werk ist keine dieser drei Angaben gesetzt, und ohne sie findet keine Übertragung statt.\n\nWird der Recorder im Auftrag einer Praxis mit einem von dieser bereitgestellten Server betrieben, ist die Praxis Verantwortliche und 1stAI Auftragsverarbeiter; die Einzelheiten regelt dann ein Vertrag nach Art. 28 DSGVO. Ohne eine solche Einrichtung verarbeitet 1stAI über dieses Werkzeug keine personenbezogenen Daten.\n\nDie HRV-Atemübung läuft vollständig im Browser und überträgt keine Daten an einen Server.",
+          "Unter /Recorder/ und /atemuebung/ stehen zwei interaktive Werkzeuge bereit.\n\nDer Recorder ist ein Demonstrationswerkzeug für Vorführungen in Praxen und nicht für den allgemeinen oder produktiven Gebrauch bestimmt. Es sind ausschließlich erfundene Testangaben einzugeben; echte Patientendaten gehören nicht hinein. Aufnahmen und die optionalen Felder (Kennung, Geburtsdatum, Thema) werden im Browser des Geräts gespeichert und verlassen es nicht von selbst. Eine Übertragung an einen Server ist technisch nur möglich, wenn Server-Adresse, Geräte-Kennung und ein gültiges Zugangs-Token eingerichtet sind — ab Werk ist keine dieser drei Angaben gesetzt, und ohne sie findet keine Übertragung statt.\n\nWird der Recorder im Auftrag einer Praxis mit einem von dieser bereitgestellten Server betrieben, ist die Praxis Verantwortliche und 1stAI Auftragsverarbeiter; die Einzelheiten regelt dann ein Vertrag nach Art. 28 DSGVO. Ohne eine solche Einrichtung verarbeitet 1stAI über dieses Werkzeug keine personenbezogenen Daten.\n\nDie HRV-Atemübung läuft vollständig im Browser und überträgt keine Daten an einen Server.",
       },
       {
         h: "4. Rechtsgrundlage",
@@ -57,7 +57,7 @@ export const privacy = {
       },
       {
         h: "7. Speicherdauer",
-        b: "E-Mail-Korrespondenz wird so lange aufbewahrt, wie es für die Bearbeitung erforderlich ist, danach gemäß steuer- und handelsrechtlicher Pflichten. Server-Logs werden vom Hosting-Anbieter kurzfristig gelöscht.",
+        b: "E-Mail-Korrespondenz wird so lange aufbewahrt, wie es für die Bearbeitung erforderlich ist, danach gemäß steuer- und handelsrechtlicher Pflichten.\n\nServer-Logdaten (Weblogs) werden nach sieben Tagen gelöscht. Diese Frist ist beim Hosting-Anbieter ausdrücklich eingestellt; ohne eine solche Einstellung würden Weblogs dort nach Angabe des Anbieters gar nicht gelöscht.\n\nIn Postfächern werden die Ordner Spam und Papierkorb nach 14 Tagen geleert. Für Mailserver-Protokolle und verschlüsselte Sicherungen nennt der Hosting-Anbieter sieben beziehungsweise vierzehn Tage; diese Fristen liegen bei ihm und sind von uns nicht einstellbar.",
       },
       {
         h: "8. Ihre Rechte",
@@ -86,12 +86,12 @@ export const privacy = {
       },
       {
         h: "2. Data collected and purposes",
-        b: "If you contact us by email or phone, we process the data you provide (name, contact details, content of your message) for the purpose of responding to your inquiry and any potential business engagement.\n\nWhen you visit the website, our hosting provider automatically processes server log data (IP address, date, time, requested resource, referrer, user agent). This data is used solely to operate the service and defend against technical attacks; it is deleted after a short period.",
+        b: "If you contact us by email or phone, we process the data you provide (name, contact details, content of your message) for the purpose of responding to your inquiry and any potential business engagement.\n\nWhen you visit the website, our hosting provider automatically processes server log data (IP address, date, time, requested resource, referrer, user agent). This data is used solely to operate the service and defend against technical attacks; it is deleted after seven days.",
       },
       {
         h: "3. Recorder and HRV breathing exercise (demo tools)",
         b:
-          "Two interactive tools are available at /Recorder/ and /atemuebung/.\n\nThe **Recorder is a demonstration tool for presentations in medical practices** and is not intended for general or productive use. Only invented test entries should be used; real patient data does not belong in it. Recordings and the optional fields (identifier, date of birth, topic) are stored in the browser on the device and do not leave it by themselves. Transmission to a server is technically possible only if a server address, a device identifier and a valid access token have been configured — none of these three is set by default, and without them no transmission takes place.\n\nWhere the Recorder is operated on behalf of a practice using a server provided by that practice, the practice is the controller and 1stAI acts as processor; the details are then governed by a contract under Art. 28 GDPR. Without such a setup, 1stAI does not process any personal data through this tool.\n\nThe HRV breathing exercise runs entirely in the browser and transmits no data to any server.",
+          "Two interactive tools are available at /Recorder/ and /atemuebung/.\n\nThe Recorder is a demonstration tool for presentations in medical practices and is not intended for general or productive use. Only invented test entries should be used; real patient data does not belong in it. Recordings and the optional fields (identifier, date of birth, topic) are stored in the browser on the device and do not leave it by themselves. Transmission to a server is technically possible only if a server address, a device identifier and a valid access token have been configured — none of these three is set by default, and without them no transmission takes place.\n\nWhere the Recorder is operated on behalf of a practice using a server provided by that practice, the practice is the controller and 1stAI acts as processor; the details are then governed by a contract under Art. 28 GDPR. Without such a setup, 1stAI does not process any personal data through this tool.\n\nThe HRV breathing exercise runs entirely in the browser and transmits no data to any server.",
       },
       {
         h: "4. Legal basis",
@@ -107,7 +107,7 @@ export const privacy = {
       },
       {
         h: "7. Retention",
-        b: "Email correspondence is kept for as long as needed to handle the matter, then according to applicable tax and commercial retention obligations. Server logs are deleted by the hosting provider after a short period.",
+        b: "Email correspondence is kept for as long as needed to handle the matter, then according to applicable tax and commercial retention obligations.\n\nServer log data (web logs) is deleted after seven days. This period is explicitly configured at the hosting provider; without such a setting, the provider states that web logs would not be deleted at all.\n\nIn mailboxes, the Spam and Trash folders are emptied after 14 days. For mail server logs and encrypted backups the hosting provider states seven and fourteen days respectively; those periods sit with the provider and cannot be configured by us.",
       },
       {
         h: "8. Your rights",
@@ -136,12 +136,12 @@ export const privacy = {
       },
       {
         h: "2. Zbierane dane i cele",
-        b: "W przypadku kontaktu drogą e-mailową lub telefoniczną przetwarzamy podane przez Państwa dane (imię i nazwisko, dane kontaktowe, treść wiadomości) w celu udzielenia odpowiedzi na zapytanie oraz ewentualnego nawiązania współpracy.\n\nPodczas wizyty na stronie nasz dostawca hostingu automatycznie przetwarza dane logów serwera (adres IP, data, godzina, żądany zasób, referrer, user-agent). Dane te służą wyłącznie do świadczenia usługi oraz obrony przed atakami technicznymi i są usuwane po krótkim okresie.",
+        b: "W przypadku kontaktu drogą e-mailową lub telefoniczną przetwarzamy podane przez Państwa dane (imię i nazwisko, dane kontaktowe, treść wiadomości) w celu udzielenia odpowiedzi na zapytanie oraz ewentualnego nawiązania współpracy.\n\nPodczas wizyty na stronie nasz dostawca hostingu automatycznie przetwarza dane logów serwera (adres IP, data, godzina, żądany zasób, referrer, user-agent). Dane te służą wyłącznie do świadczenia usługi oraz obrony przed atakami technicznymi i są usuwane po siedmiu dniach.",
       },
       {
         h: "3. Recorder i ćwiczenie oddechowe HRV (narzędzia demonstracyjne)",
         b:
-          "Pod adresami /Recorder/ oraz /atemuebung/ dostępne są dwa narzędzia interaktywne.\n\n**Recorder jest narzędziem demonstracyjnym przeznaczonym do prezentacji w gabinetach** i nie służy do użytku ogólnego ani produkcyjnego. Należy wprowadzać wyłącznie fikcyjne dane testowe; rzeczywiste dane pacjentów nie powinny być w nim wprowadzane. Nagrania oraz pola opcjonalne (identyfikator, data urodzenia, temat) są zapisywane w przeglądarce na urządzeniu i same z niego nie wychodzą. Przesłanie na serwer jest technicznie możliwe wyłącznie wtedy, gdy skonfigurowano adres serwera, identyfikator urządzenia oraz ważny token dostępu — żadna z tych trzech wartości nie jest ustawiona domyślnie, a bez nich transmisja nie następuje.\n\nJeżeli Recorder jest używany na zlecenie gabinetu, na serwerze udostępnionym przez ten gabinet, administratorem danych jest gabinet, a 1stAI działa jako podmiot przetwarzający; szczegóły reguluje wówczas umowa z art. 28 RODO. Bez takiej konfiguracji 1stAI nie przetwarza za pomocą tego narzędzia żadnych danych osobowych.\n\nĆwiczenie oddechowe HRV działa w całości w przeglądarce i nie przesyła danych na serwer.",
+          "Pod adresami /Recorder/ oraz /atemuebung/ dostępne są dwa narzędzia interaktywne.\n\nRecorder jest narzędziem demonstracyjnym przeznaczonym do prezentacji w gabinetach i nie służy do użytku ogólnego ani produkcyjnego. Należy wprowadzać wyłącznie fikcyjne dane testowe; rzeczywiste dane pacjentów nie powinny być w nim wprowadzane. Nagrania oraz pola opcjonalne (identyfikator, data urodzenia, temat) są zapisywane w przeglądarce na urządzeniu i same z niego nie wychodzą. Przesłanie na serwer jest technicznie możliwe wyłącznie wtedy, gdy skonfigurowano adres serwera, identyfikator urządzenia oraz ważny token dostępu — żadna z tych trzech wartości nie jest ustawiona domyślnie, a bez nich transmisja nie następuje.\n\nJeżeli Recorder jest używany na zlecenie gabinetu, na serwerze udostępnionym przez ten gabinet, administratorem danych jest gabinet, a 1stAI działa jako podmiot przetwarzający; szczegóły reguluje wówczas umowa z art. 28 RODO. Bez takiej konfiguracji 1stAI nie przetwarza za pomocą tego narzędzia żadnych danych osobowych.\n\nĆwiczenie oddechowe HRV działa w całości w przeglądarce i nie przesyła danych na serwer.",
       },
       {
         h: "4. Podstawa prawna",
@@ -157,7 +157,7 @@ export const privacy = {
       },
       {
         h: "7. Okres przechowywania",
-        b: "Korespondencja e-mailowa jest przechowywana przez okres niezbędny do obsługi sprawy, a następnie zgodnie z obowiązkami podatkowymi i handlowymi. Logi serwera są usuwane przez dostawcę hostingu po krótkim okresie.",
+        b: "Korespondencja e-mailowa jest przechowywana przez okres niezbędny do obsługi sprawy, a następnie zgodnie z obowiązkami podatkowymi i handlowymi.\n\nLogi serwera WWW są usuwane po siedmiu dniach. Okres ten został wyraźnie ustawiony u dostawcy hostingu; bez takiego ustawienia — według informacji dostawcy — logi nie byłyby usuwane w ogóle.\n\nW skrzynkach pocztowych foldery Spam i Kosz są opróżniane po 14 dniach. Dla logów serwera pocztowego i zaszyfrowanych kopii zapasowych dostawca hostingu podaje odpowiednio siedem i czternaście dni; okresy te leżą po jego stronie i nie są przez nas konfigurowalne.",
       },
       {
         h: "8. Państwa prawa",
