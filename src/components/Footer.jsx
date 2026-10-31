@@ -18,7 +18,9 @@ export default function Footer({ lang = "en" }) {
         <Link href={`/${lang}/impressum/`} className="hover:text-primary">{tr.footer.links.imprint}</Link>
         <Link href={`/${lang}/${lang === "de" ? "datenschutz" : "privacy"}/`} className="hover:text-primary">{tr.footer.links.privacy}</Link>
         <a href="/polityka-prywatnosci/" className="hover:text-primary" hrefLang="pl">{tr.footer.links.privacyPl}</a>
+        <Link href={`/${lang}/nutzungsbedingungen/`} className="hover:text-primary">{tr.footer.links.terms}</Link>
         <a href="/dane-przedsiebiorcy/" className="hover:text-primary" hrefLang="pl">{tr.footer.links.imprintPl}</a>
+        <a href="/regulamin/" className="hover:text-primary" hrefLang="pl">{tr.footer.links.termsPl}</a>
         {siteConfig.family.map((f) => (
           <a key={f.url} href={f.url} target="_blank" rel="noopener" className="hover:text-primary">
             {f.name}

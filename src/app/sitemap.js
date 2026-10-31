@@ -8,7 +8,7 @@ export default function sitemap() {
   const privacyByLang = { de: "datenschutz", en: "privacy" };
   const entries = [];
   for (const lang of siteConfig.locales) {
-    for (const p of ["", "kontakt", "impressum", privacyByLang[lang]]) {
+    for (const p of ["", "kontakt", "impressum", "nutzungsbedingungen", privacyByLang[lang]]) {
       entries.push({
         url: `${siteConfig.url}/${lang}${p ? `/${p}` : ""}/`,
         lastModified: now,
@@ -45,6 +45,12 @@ export default function sitemap() {
   });
   entries.push({
     url: `${siteConfig.url}/dane-przedsiebiorcy/`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.5,
+  });
+  entries.push({
+    url: `${siteConfig.url}/regulamin/`,
     lastModified: now,
     changeFrequency: "monthly",
     priority: 0.5,

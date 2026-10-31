@@ -28,6 +28,7 @@ const SPRACHE = {
   en: "en",
   "polityka-prywatnosci": "pl", // RODO-Text, polnische Anschrift
   "dane-przedsiebiorcy": "pl", // polnische Pflichtangaben (fA-1652)
+  regulamin: "pl", // Regulamin uswude art. 8
   atemuebung: "de", // HRV-Atemuebung, traegt selbst og:locale=de_DE
   Recorder: "de",
   Settings: "de",

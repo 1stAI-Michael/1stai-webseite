@@ -22,7 +22,7 @@ const dict = {
     },
     footer: {
       legal: "JDG · registered with CEIDG",
-      links: { imprint: "Imprint", contact: "Contact", privacy: "Privacy", privacyPl: "Polityka prywatności (PL)", imprintPl: "Dane przedsiębiorcy (PL)" },
+      links: { imprint: "Imprint", contact: "Contact", privacy: "Privacy", privacyPl: "Polityka prywatności (PL)", imprintPl: "Dane przedsiębiorcy (PL)", terms: "Terms of use", termsPl: "Regulamin (PL)" },
       family: "Family brands",
     },
     home: {
@@ -90,7 +90,7 @@ const dict = {
     },
     footer: {
       legal: "JDG · im CEIDG eingetragen",
-      links: { imprint: "Impressum", contact: "Kontakt", privacy: "Datenschutz", privacyPl: "Polityka prywatności (PL)", imprintPl: "Dane przedsiębiorcy (PL)" },
+      links: { imprint: "Impressum", contact: "Kontakt", privacy: "Datenschutz", privacyPl: "Polityka prywatności (PL)", imprintPl: "Dane przedsiębiorcy (PL)", terms: "Nutzungsbedingungen", termsPl: "Regulamin (PL)" },
       family: "Schwester-Marken",
     },
     home: {
