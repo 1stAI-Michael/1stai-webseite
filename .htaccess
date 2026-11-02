@@ -1,0 +1,14 @@
+# 1stai.eu — Apache-Konfiguration fuer den Hetzner-Webspace.
+#
+# Angelegt am 02.11.2026. Der Deploy laedt diese Datei aus dem
+# Projektwurzelverzeichnis mit hoch (scripts/deploy-webspace.sh).
+#
+# Ohne die ErrorDocument-Zeile liefert der Server bei einer falschen Adresse
+# seine eigene nackte Seite aus — gemessen am 02.11.2026: 295 Byte, "Not Found",
+# ohne Anbieterangabe und ohne Rueckweg. Die gebaute 404.html lag da bereits auf
+# dem Server und wurde nie angefasst.
+#
+# Bewusst minimal: Jede weitere Direktive ist ein Weg, die ganze Seite mit einem
+# 500er auszuknipsen, falls AllowOverride sie nicht zulaesst. Was hier dazukommt,
+# wird einzeln gegen die Live-Seite gemessen.
+ErrorDocument 404 /404.html

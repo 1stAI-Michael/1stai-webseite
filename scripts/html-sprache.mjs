@@ -32,9 +32,13 @@ const SPRACHE = {
   atemuebung: "de", // HRV-Atemuebung, traegt selbst og:locale=de_DE
   Recorder: "de",
   Settings: "de",
-  404: "en", // Next-Standardseite, englischer Text
-  "404.html": "en", // dieselbe Seite noch einmal als Datei, nicht als Verzeichnis
-  "_not-found": "en",
+  // Seit 02.11.2026 eine eigene 404-Seite (src/app/not-found.jsx) statt der
+  // Next-Standardseite. Sie fuehrt Deutsch und wiederholt den Text auf Englisch;
+  // der englische Block traegt sein eigenes lang-Attribut im Markup. Vorher stand
+  // hier "en" — richtig fuer die alte englische Standardseite, falsch fuer diese.
+  404: "de",
+  "404.html": "de", // dieselbe Seite noch einmal als Datei, nicht als Verzeichnis
+  "_not-found": "de",
   "index.html": "en", // Weiterleitung auf /en/ — traegt gar kein lang-Attribut
 };
 
