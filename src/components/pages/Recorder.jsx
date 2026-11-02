@@ -58,6 +58,9 @@ export default function Recorder() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  // Nachaudit 02.11.2026 (F08): Serverziel und Uebertragungszeitpunkt sollen in
+  // der Ansicht stehen, nicht nur in den Einstellungen.
+  const [uploadZiel, setUploadZiel] = useState(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [savedNotice, setSavedNotice] = useState(false);
@@ -204,6 +207,10 @@ export default function Recorder() {
     if (rms > 0.01) {
       lastAudioActivityAtRef.current = Date.now();
     }
+  }, []);
+
+  useEffect(() => {
+    setUploadZiel(getSettings().baseUrl || "");
   }, []);
 
   useEffect(() => {
@@ -738,10 +745,14 @@ export default function Recorder() {
             deckt das nicht ab. Der Schluss war nachvollziehbar und beruhte auf
             dem, was die Seite ueber sich selbst sagte: naemlich nichts ueber
             ihren Zweck. Das steht jetzt hier.
-            Michael-Entscheid 28.10.2026, technisch gegengeprueft: ohne Server-URL,
-            Device-ID und Bearer-Token aus einem Login geht nichts hinaus
-            (src/lib/api.js, uploadRecording/uploadTextOnly). Alle drei sind ab
-            Werk leer. */}
+            Michael-Entscheid 28.10.2026, technisch gegengeprueft: ohne Server-URL
+            und Bearer-Token aus einem Login geht nichts hinaus (src/lib/api.js,
+            uploadRecording/uploadTextOnly). Beide sind ab Werk leer.
+            Korrektur 02.11.2026 (Nachaudit F03): die Geraete-Kennung ist NICHT ab
+            Werk leer — getSettings() erzeugt sie beim ersten Aufruf und legt sie
+            in localStorage ab (src/lib/storage.js:42). Hier stand vorher "alle
+            drei"; das war falsch und widersprach der Settings-Ansicht, die die
+            Kennung vor jeder Eingabe anzeigt. */}
         <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
           <strong>Demo-Werkzeug — keine echten Patientendaten eingeben.</strong> Dieser Recorder dient
           Vorfuehrungen in Praxen. Er ist nicht fuer den allgemeinen oder produktiven Gebrauch bestimmt.
@@ -750,10 +761,32 @@ export default function Recorder() {
 
         <p className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-600">
           Aufnahmen und Metadaten werden zuerst lokal auf diesem Geraet gespeichert und verlassen es nicht
-          von selbst. Ein Upload ist nur moeglich, wenn Server-Adresse, Geraete-Kennung und ein gueltiges
-          Zugangs-Token eingerichtet sind; ohne diese drei Angaben wird nichts uebertragen. Ab Werk ist
-          keine davon gesetzt.
+          von selbst. Ein Upload ist nur moeglich, wenn Server-Adresse und ein gueltiges Zugangs-Token
+          eingerichtet sind; beides ist ab Werk leer, und ohne beides wird nichts uebertragen. Eine
+          Geraete-Kennung erzeugt dieses Werkzeug beim ersten Aufruf selbst und legt sie lokal ab — sie
+          unterscheidet dieses Geraet von anderen, enthaelt keine Angabe zu Ihrer Person und verlaesst
+          das Geraet nur bei einem eingerichteten Upload.
         </p>
+
+        <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs leading-relaxed text-slate-600">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className="font-semibold text-slate-700">Upload-Ziel:</span>
+            {uploadZiel === null ? (
+              <span className="text-slate-400">wird gelesen …</span>
+            ) : uploadZiel ? (
+              <span className="font-mono break-all text-slate-800">{uploadZiel}</span>
+            ) : (
+              <span className="font-semibold text-slate-800">
+                nicht eingerichtet — es wird nichts uebertragen
+              </span>
+            )}
+          </div>
+          <p className="mt-1">
+            Uebertragen wird nur unmittelbar nach dem Speichern eines Satzes und wenn Sie in der
+            Warteschlange auf „Erneut versuchen" tippen. Es laeuft keine Uebertragung im
+            Hintergrund, auch nicht nach einem Netzwechsel.
+          </p>
+        </div>
 
         <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
           <span
@@ -767,10 +800,10 @@ export default function Recorder() {
 
         <div className="mt-6 grid gap-4">
           <label className="grid gap-2 text-sm text-slate-600">
-            Patient/ID (optional)
+            Patient/ID — Testwert (optional)
             <input
               className="rounded-xl border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-400 focus:outline-none"
-              placeholder="Patient/ID"
+              placeholder="z. B. Testfall 01"
               value={patient}
               onChange={(event) => {
                 setPatient(event.target.value);
@@ -780,10 +813,10 @@ export default function Recorder() {
             />
           </label>
           <label className="grid gap-2 text-sm text-slate-600">
-            DOB (optional)
+            Geburtsdatum — Testwert (optional)
             <input
               className="rounded-xl border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-400 focus:outline-none"
-              placeholder="Geburtsdatum"
+              placeholder="z. B. 01.01.1970 (erfunden)"
               value={dob}
               onChange={(event) => {
                 setDob(event.target.value);
@@ -793,7 +826,7 @@ export default function Recorder() {
             />
           </label>
           <label className="grid gap-2 text-sm text-slate-600">
-            Thema (optional)
+            Thema — Testwert (optional)
             <input
               className="rounded-xl border border-slate-200 px-3 py-2 text-slate-900 focus:border-slate-400 focus:outline-none"
               placeholder="Infusion ..."

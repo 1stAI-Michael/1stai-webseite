@@ -1,4 +1,5 @@
 import AtemuebungPage from "../../components/pages/Atemuebung";
+import WerkzeugFooter from "../../components/WerkzeugFooter";
 import { buildMetadata } from "../../lib/seo";
 
 export const metadata = buildMetadata({
@@ -11,5 +12,10 @@ export const metadata = buildMetadata({
 });
 
 export default function Page() {
-  return <AtemuebungPage />;
+  return (
+    <>
+      <AtemuebungPage />
+      <WerkzeugFooter lang="de" />
+    </>
+  );
 }

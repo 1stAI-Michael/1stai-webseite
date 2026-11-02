@@ -105,4 +105,42 @@ export function clearToken() {
   window.localStorage.removeItem(TOKEN_KEY);
 }
 
-export { defaultSettings };
+/**
+ * Loescht alles, was dieses Werkzeug auf dem Geraet abgelegt hat — und zwar die
+ * BEIDEN localStorage-Schluessel, nicht nur die Einstellungen.
+ *
+ * Eingefuehrt mit dem Nachaudit vom 02.11.2026 (F08): es gab keinen Weg,
+ * Zugangsdaten und Geraete-Kennung gezielt wieder loszuwerden, ausser die
+ * Browserdaten der ganzen Seite zu leeren.
+ *
+ * Gibt zurueck, WAS geloescht wurde und was danach noch da ist. Ein Loeschknopf,
+ * der nur "fertig" sagt, sieht im Fehlerfall genauso aus wie im Erfolgsfall;
+ * die Settings-Ansicht zeigt deshalb die Nachmessung an.
+ *
+ * ACHTUNG beim Pruefen: `uebrig` ist nur fuer den Augenblick direkt nach dem
+ * Entfernen aussagekraeftig. Der naechste getSettings()-Aufruf — und den loest
+ * schon das naechste Rendern aus — legt STORAGE_KEY sofort wieder an, mit leeren
+ * Feldern und einer NEUEN Geraete-Kennung. Der Abnahmetest vom 02.11.2026 hat
+ * genau das gezeigt: das Werkzeug meldete "keine Eintraege mehr", waehrend der
+ * Schluessel schon wieder existierte. Wer hier prueft, prueft die WERTE
+ * (baseUrl/username/password leer, Kennung veraendert), nicht die Anwesenheit
+ * des Schluessels.
+ */
+export function clearLocalSettings() {
+  if (typeof window === "undefined") {
+    return { geloescht: [], uebrig: [] };
+  }
+  const geloescht = [];
+  for (const key of [STORAGE_KEY, TOKEN_KEY]) {
+    if (window.localStorage.getItem(key) !== null) {
+      geloescht.push(key);
+    }
+    window.localStorage.removeItem(key);
+  }
+  const uebrig = [STORAGE_KEY, TOKEN_KEY].filter(
+    (key) => window.localStorage.getItem(key) !== null
+  );
+  return { geloescht, uebrig };
+}
+
+export { defaultSettings, STORAGE_KEY, TOKEN_KEY };

@@ -67,6 +67,15 @@ export default async function ImprintPage({ params }) {
         {contact.founder}, {contact.address.street}, {contact.address.city}, {contact.address.country}
       </p>
 
+      {/* Nachaudit 02.11.2026 (F10): Die Seite nannte Niederschlesien, das
+          verlinkte Profil Spremberg — daraus allein folgt keine deutsche
+          Niederlassung, aber der Pruefverdacht stand im Raum. Michael-Entscheid
+          02.11.2026: klarstellen, dass der Dienst aus Polen laeuft. Das ist eine
+          Tatsachenaussage ueber den Betrieb, keine rechtliche Einordnung — sie
+          wird falsch, sobald tatsaechlich aus Deutschland heraus betrieben wird. */}
+      <h2>{tr.establishmentHeading}</h2>
+      <p>{tr.establishment}</p>
+
       <h2>{tr.disclaimerHeading}</h2>
       <p>{tr.disclaimer}</p>
     </article>

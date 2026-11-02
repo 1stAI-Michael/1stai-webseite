@@ -1,4 +1,5 @@
 import Settings from "../../components/pages/Settings";
+import WerkzeugFooter from "../../components/WerkzeugFooter";
 import { absoluteUrl } from "../../lib/seo";
 
 export const metadata = {
@@ -9,5 +10,10 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <Settings />;
+  return (
+    <>
+      <Settings />
+      <WerkzeugFooter lang="de" />
+    </>
+  );
 }

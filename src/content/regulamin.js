@@ -22,27 +22,40 @@
 import { siteConfig } from "../lib/site";
 
 const { contact, name, legal } = siteConfig;
-const anbieter = [
-  name,
-  contact.address.street,
-  `${contact.address.city}, ${contact.address.country}`,
-  "",
-  "JDG, eingetragen im CEIDG",
-  `NIP: ${legal.nip}`,
-  `REGON: ${legal.regon}`,
-  "",
-  `E-Mail: ${contact.email}`,
-].join("\n");
+
+// Die Rechtsform-Zeile muss je Sprache stehen: bis zum Nachaudit vom 02.11.2026
+// (F11) trug EIN gemeinsamer Block das deutsche "JDG, eingetragen im CEIDG" auch
+// in den polnischen und den englischen Text. Im polnischen Regulamin ist der
+// gesetzlich uebliche Wortlaut "jednoosobowa dzialalnosc gospodarcza wpisana do
+// CEIDG" — eine deutsche Abkuerzung steht dort wie ein Fremdkoerper.
+const rechtsform = {
+  de: "JDG (jednoosobowa działalność gospodarcza), eingetragen im CEIDG",
+  pl: "jednoosobowa działalność gospodarcza wpisana do CEIDG",
+  en: "sole proprietorship (jednoosobowa działalność gospodarcza) registered with CEIDG",
+};
+
+const anbieterIn = (lang) =>
+  [
+    name,
+    contact.address.street,
+    `${contact.address.city}, ${contact.address.country}`,
+    "",
+    rechtsform[lang],
+    `NIP: ${legal.nip}`,
+    `REGON: ${legal.regon}`,
+    "",
+    `E-Mail: ${contact.email}`,
+  ].join("\n");
 
 export const regulamin = {
   de: {
     title: "Bedingungen für elektronische Dienstleistungen",
-    updated: "Stand: 31. Oktober 2026 · Gültig ab: 2. November 2026",
+    updated: "Stand: 2. November 2026 (Fassung 2) · Gültig ab: 2. November 2026",
     intro:
       "Dieser Regulamin regelt die Nutzung der elektronischen Dienste, die über 1stai.eu " +
       "bereitgestellt werden (Regulamin świadczenia usług drogą elektroniczną).",
     sections: [
-      { h: "1. Anbieter", b: anbieter },
+      { h: "1. Anbieter", b: anbieterIn("de") },
       {
         h: "2. Gegenstand",
         b:
@@ -110,7 +123,7 @@ export const regulamin = {
           `Beschwerden über elektronisch erbrachte Dienste können an ${contact.email} gerichtet ` +
           "werden.\n\nDie Beschwerde sollte nach Möglichkeit den betroffenen Dienst, eine " +
           "Beschreibung des Problems sowie die für die Bearbeitung erforderlichen Kontaktdaten " +
-          "enthalten.\n\n1stAI bearbeitet Beschwerden ohne unangemessene Verzögerung.",
+          "enthalten.\n\nSie erhalten eine Eingangsbestätigung an dieselbe Adresse. Die Antwort auf die Beschwerde erfolgt innerhalb von 14 Tagen nach Eingang in Textform (E-Mail oder auf Wunsch auf Papier). Gegenüber Verbrauchern ist diese Frist gesetzlich vorgegeben (Art. 7a des polnischen Verbraucherrechtsgesetzes); bleibt die Antwort aus, gilt die Beschwerde als anerkannt. Dieselbe Frist halte ich auch gegenüber Unternehmen ein.\n\nWird die Beschwerde zurückgewiesen, nennt die Antwort den Grund. Verbraucher können sich danach an den örtlich zuständigen Verbraucherbeauftragten (rzecznik konsumentów) oder an die EU-Plattform zur Online-Streitbeilegung wenden.",
       },
       {
         h: "9. Anwendbares Recht",
@@ -123,12 +136,12 @@ export const regulamin = {
   },
   pl: {
     title: "Regulamin świadczenia usług drogą elektroniczną",
-    updated: "Stan: 31 października 2026 · Obowiązuje od: 2 listopada 2026",
+    updated: "Stan: 2 listopada 2026 (wersja 2) · Obowiązuje od: 2 listopada 2026",
     intro:
       "Niniejszy regulamin określa zasady korzystania z usług świadczonych drogą elektroniczną " +
       "za pośrednictwem serwisu 1stai.eu.",
     sections: [
-      { h: "1. Usługodawca", b: anbieter },
+      { h: "1. Usługodawca", b: anbieterIn("pl") },
       {
         h: "2. Przedmiot",
         b:
@@ -196,7 +209,7 @@ export const regulamin = {
           `Reklamacje dotyczące usług świadczonych drogą elektroniczną można kierować na adres ${contact.email}.` +
           "\n\nReklamacja powinna w miarę możliwości zawierać wskazanie usługi, opis problemu " +
           "oraz dane kontaktowe niezbędne do jej rozpatrzenia.\n\n" +
-          "1stAI rozpatruje reklamacje bez nieuzasadnionej zwłoki.",
+          "Potwierdzenie wpływu wysyłane jest na ten sam adres. Odpowiedź na reklamację udzielana jest w terminie 14 dni od dnia jej otrzymania, na trwałym nośniku (wiadomość e-mail, a na życzenie na papierze). Wobec konsumentów termin ten wynika z art. 7a ustawy o prawach konsumenta; brak odpowiedzi w tym terminie oznacza uznanie reklamacji. Ten sam termin stosowany jest także wobec przedsiębiorców.\n\nW razie nieuwzględnienia reklamacji odpowiedź zawiera uzasadnienie. Konsument może następnie zwrócić się do miejscowo właściwego rzecznika konsumentów lub skorzystać z unijnej platformy ODR.",
       },
       {
         h: "9. Prawo właściwe",
@@ -209,13 +222,13 @@ export const regulamin = {
   },
   en: {
     title: "Terms for electronically supplied services",
-    updated: "As of: 31 October 2026 · Effective from: 2 November 2026",
+    updated: "As of: 2 November 2026 (version 2) · Effective from: 2 November 2026",
     intro:
       "These terms govern the use of the electronically supplied services provided through " +
       "1stai.eu (Regulamin świadczenia usług drogą elektroniczną). The Polish version at " +
       "/regulamin/ is the one that fulfils the statutory requirement.",
     sections: [
-      { h: "1. Provider", b: anbieter },
+      { h: "1. Provider", b: anbieterIn("en") },
       {
         h: "2. Subject matter",
         b:
@@ -282,7 +295,7 @@ export const regulamin = {
           `Complaints about electronically supplied services can be sent to ${contact.email}.` +
           "\n\nWhere possible, a complaint should state the service concerned, describe the " +
           "problem and include the contact details needed to process it.\n\n" +
-          "1stAI handles complaints without undue delay.",
+          "Receipt is confirmed to the same address. A complaint is answered within 14 days of receipt on a durable medium (by e-mail, or on paper on request). For consumers this period is laid down by law (Art. 7a of the Polish Consumer Rights Act); if no answer is given within it, the complaint counts as accepted. The same period is applied to business customers.\n\nIf a complaint is rejected, the answer states the reason. Consumers may then turn to the locally competent consumer ombudsman (rzecznik konsumentów) or use the EU online dispute resolution platform.",
       },
       {
         h: "9. Applicable law",

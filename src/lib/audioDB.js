@@ -102,3 +102,26 @@ export async function deleteRecording(id) {
   const db = await requireDb();
   await db.delete(STORE_NAME, id);
 }
+
+/**
+ * Leert den gesamten Aufnahme-Speicher — auch die bereits hochgeladenen Saetze,
+ * die sonst unbegrenzt liegen bleiben (`markAsUploaded` setzt nur ein Flag, es
+ * loescht nichts).
+ *
+ * Nachaudit 02.11.2026, F08. Gibt die Zahl VOR und NACH dem Leeren zurueck:
+ * die Settings-Ansicht zeigt beide an, damit "geloescht" eine Messung ist und
+ * keine Behauptung.
+ */
+export async function clearAllRecordings() {
+  const db = await requireDb();
+  const vorher = await db.count(STORE_NAME);
+  await db.clear(STORE_NAME);
+  const nachher = await db.count(STORE_NAME);
+  return { vorher, nachher };
+}
+
+/** Wie viele Saetze liegen gerade lokal? (Auch die hochgeladenen.) */
+export async function countRecordings() {
+  const db = await requireDb();
+  return db.count(STORE_NAME);
+}

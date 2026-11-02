@@ -62,9 +62,12 @@ const dict = {
       taxHeading: "Tax / VAT",
       contactHeading: "Contact",
       responsibleHeading: "Responsible for content",
-      disclaimerHeading: "Liability",
+      establishmentHeading: "Place of establishment",
+      establishment:
+        "This website is operated by the sole proprietorship registered in Poland and named above. The service is established in Poland; there is no branch or permanent establishment in Germany. Editorial responsibility for all content, including the German-language blog, rests with the person named above at the Polish address.",
+      disclaimerHeading: "Content and external links",
       disclaimer:
-        "All content has been prepared with care. Liability for external links rests with their respective operators. No liability is assumed for the topicality, correctness or completeness of the information provided on this website.",
+        "The content of this site is prepared carefully and reviewed regularly. Linked external sites are operated and maintained by their respective operators; their content is outside my control. If you find an error or an outdated statement, please write to schiffer@1stai.eu and I will correct it. Statutory liability remains unaffected.",
     },
   },
   de: {
@@ -130,9 +133,12 @@ const dict = {
       taxHeading: "Steuer / USt",
       contactHeading: "Kontakt",
       responsibleHeading: "Inhaltlich verantwortlich",
-      disclaimerHeading: "Haftung",
+      establishmentHeading: "Niederlassung",
+      establishment:
+        "Diese Website wird von der oben genannten, in Polen eingetragenen Einzelunternehmung betrieben. Der Dienst ist in Polen niedergelassen; eine Zweigstelle oder Betriebsstätte in Deutschland besteht nicht. Die redaktionelle Verantwortung für alle Inhalte, auch für den deutschsprachigen Blog, liegt bei der oben genannten Person unter der polnischen Anschrift.",
+      disclaimerHeading: "Inhalte und externe Links",
       disclaimer:
-        "Alle Inhalte wurden sorgfältig erstellt. Für externe Links übernehmen wir keine Haftung — verantwortlich sind ausschließlich deren Betreiber. Eine Gewähr für Aktualität, Richtigkeit und Vollständigkeit der bereitgestellten Informationen wird nicht übernommen.",
+        "Die Inhalte dieser Seite werden sorgfältig erstellt und regelmäßig überprüft. Verlinkte externe Seiten werden von ihren jeweiligen Betreibern verantwortet; auf deren Inhalte habe ich keinen Einfluss. Fehler oder veraltete Angaben nehme ich unter schiffer@1stai.eu entgegen und korrigiere sie. Die gesetzliche Haftung bleibt unberührt.",
     },
   },
 };

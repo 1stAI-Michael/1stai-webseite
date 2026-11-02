@@ -1,8 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { defaultSettings, getSettings, setSettings, clearToken } from "../../lib/storage";
+import {
+  defaultSettings,
+  getSettings,
+  setSettings,
+  clearToken,
+  clearLocalSettings,
+} from "../../lib/storage";
+import { clearAllRecordings, countRecordings } from "../../lib/audioDB";
 import { testLogin } from "../../lib/api";
 
 export default function Settings() {
@@ -15,8 +22,74 @@ export default function Settings() {
   const [loginStatus, setLoginStatus] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
+  const [lokalAnzahl, setLokalAnzahl] = useState(null);
+  const [loeschFrage, setLoeschFrage] = useState(false);
+  const [loeschErgebnis, setLoeschErgebnis] = useState("");
 
-  const deviceId = current.deviceId;
+  // Zaehlt, was gerade auf diesem Geraet liegt. Ohne diese Zahl waere der
+  // Loeschknopf eine Behauptung: er saehe vorher und nachher gleich aus.
+  useEffect(() => {
+    let abgebrochen = false;
+    countRecordings()
+      .then((n) => {
+        if (!abgebrochen) setLokalAnzahl(n);
+      })
+      .catch(() => {
+        if (!abgebrochen) setLokalAnzahl("unbekannt");
+      });
+    return () => {
+      abgebrochen = true;
+    };
+  }, [loeschErgebnis]);
+
+  async function handleAllesLoeschen() {
+    setLoeschErgebnis("");
+    let saetze = { vorher: 0, nachher: 0 };
+    try {
+      saetze = await clearAllRecordings();
+    } catch {
+      setLoeschErgebnis("Der Aufnahme-Speicher liess sich nicht oeffnen — nichts geloescht.");
+      setLoeschFrage(false);
+      return;
+    }
+    const alteKennung = deviceId;
+    clearLocalSettings();
+    clearToken();
+    setLoeschFrage(false);
+
+    // Nachmessen an den WERTEN, nicht an der Anwesenheit des Schluessels:
+    // getSettings() legt ihn hier sofort wieder an, leer und mit neuer Kennung.
+    const jetzt = getSettings();
+    const zugangLeer = !jetzt.baseUrl && !jetzt.username && !jetzt.password;
+    const kennungNeu = jetzt.deviceId && jetzt.deviceId !== alteKennung;
+
+    setBaseUrl("");
+    setUsername("");
+    setPassword("");
+    setTargetSampleRate("");
+    setDeviceId(jetzt.deviceId || "");
+
+    if (saetze.nachher === 0 && zugangLeer && kennungNeu) {
+      setLoeschErgebnis(
+        `Geloescht: ${saetze.vorher} Aufnahme-Satz/Saetze, Server-Adresse, Zugangsdaten ` +
+          "und die bisherige Geraete-Kennung. Nachgezaehlt: 0 Saetze, keine Zugangsdaten. " +
+          `Das Werkzeug hat sofort eine neue, leere Einstellung angelegt — die Kennung ` +
+          `lautet jetzt ${(jetzt.deviceId || "").slice(0, 8)}… statt ` +
+          `${(alteKennung || "").slice(0, 8)}…`
+      );
+    } else {
+      const offen = [];
+      if (saetze.nachher !== 0) offen.push(`${saetze.nachher} Aufnahme-Satz/Saetze`);
+      if (!zugangLeer) offen.push("Server-Adresse oder Zugangsdaten");
+      if (!kennungNeu) offen.push("die alte Geraete-Kennung");
+      setLoeschErgebnis(
+        `Unvollstaendig — nach dem Loeschen liegt noch vor: ${offen.join(", ")}. ` +
+          "Bitte zusaetzlich die Browserdaten dieser Seite leeren."
+      );
+    }
+  }
+
+  const [deviceId, setDeviceId] = useState(current.deviceId);
 
   const handleSave = () => {
     setSettings({
@@ -124,11 +197,61 @@ export default function Settings() {
           <div className="grid gap-2 text-sm text-slate-600">
             <span>Device ID</span>
             <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-500 select-all">
-              {deviceId || "wird beim Speichern erzeugt"}
+              {deviceId || "— (geloescht; beim naechsten Laden entsteht eine neue)"}
             </div>
             <p className="text-xs text-slate-400">
-              Wird automatisch erzeugt. Muss vom Admin einmalig freigegeben werden.
+              Entsteht beim ersten Oeffnen dieser Seite und liegt seitdem lokal im Browser. Sie
+              unterscheidet dieses Geraet von anderen und enthaelt keine Angabe zu Ihrer Person.
+              Fuer einen Upload muss sie der Admin einmalig freigeben.
             </p>
+          </div>
+
+          <div className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+            <span className="text-sm font-semibold text-slate-700">Lokale Daten</span>
+            <p className="text-xs leading-relaxed text-slate-600">
+              Auf diesem Geraet liegen gerade{" "}
+              <strong className="font-semibold text-slate-800">
+                {lokalAnzahl === null ? "…" : lokalAnzahl}
+              </strong>{" "}
+              gespeicherte Aufnahme-Saetze (auch bereits hochgeladene) sowie die Einstellungen
+              mit Zugangsdaten und Geraete-Kennung. Loeschen entfernt beides vollstaendig und
+              laesst sich nicht rueckgaengig machen.
+            </p>
+            {loeschFrage ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-slate-700">Wirklich alles loeschen?</span>
+                <button
+                  className="rounded-full bg-rose-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700"
+                  onClick={handleAllesLoeschen}
+                  type="button"
+                >
+                  Ja, alles loeschen
+                </button>
+                <button
+                  className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400"
+                  onClick={() => setLoeschFrage(false)}
+                  type="button"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            ) : (
+              <button
+                className="w-fit rounded-full border border-rose-300 px-4 py-1.5 text-xs font-semibold text-rose-700 transition hover:border-rose-400 hover:bg-rose-50"
+                onClick={() => {
+                  setLoeschErgebnis("");
+                  setLoeschFrage(true);
+                }}
+                type="button"
+              >
+                Alle lokalen Daten loeschen
+              </button>
+            )}
+            {loeschErgebnis ? (
+              <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs leading-relaxed text-slate-700">
+                {loeschErgebnis}
+              </p>
+            ) : null}
           </div>
         </div>
 

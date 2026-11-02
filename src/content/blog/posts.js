@@ -336,6 +336,26 @@ That is the real finding behind the numbers. Not that one particular level is ri
       ],
     },
   },
+  // NACHAUDIT 02.11.2026 — zwei Befunde zu DIESEM Beitrag, beide von Michael
+  // bewusst NICHT umgesetzt. Wer sie erneut findet, hat nichts Neues gefunden.
+  //
+  // F04 (P1): "objektive KI-Zweitbewertung" und die Nutzenzahlen (rund zwei
+  // Stunden je Patient, zehn Minuten je Abschlussbericht) haben keine
+  // oeffentlich nachvollziehbare Messmethode. Der Auditor empfahl, "objektiv"
+  // zu ersetzen und die Zahlen als Schaetzung zu kennzeichnen.
+  // Michael-Entscheid 02.11.2026: "Nichts aendern, das ist ein Blog Artikel
+  // keine Angebot mit Preis, Leistungsbeschreibung, etc."
+  //
+  // F05 (P2): Vorauswahl von Patienten und Vorschlaege zur Eingruppierung
+  // koennten eine medizinische Zweckbestimmung nach MDR begruenden; ein Arzt
+  // als Letztentscheider schliesst das nicht aus.
+  // Michael-Entscheid 02.11.2026: "So lassen die MDR ist Projekt spezifisch
+  // mit dem KH geregelt, auch hier ist es ein Blog Artikel, der schreibt was
+  // moeglich ist und kein konkretes Angebot."
+  //
+  // Beide Entscheide gelten fuer den Beitrag als redaktionellen Text. Wer
+  // daraus eine Leistungsseite, ein Angebot oder eine Preisliste macht,
+  // verlaesst die Begruendung — dann sind F04 und F05 wieder offen.
   {
     slug: "experience-beats-talent-systeme-mitdenken",
     date: "2026-09-23",

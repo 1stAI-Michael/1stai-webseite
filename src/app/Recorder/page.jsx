@@ -1,4 +1,5 @@
 import Recorder from "../../components/pages/Recorder";
+import WerkzeugFooter from "../../components/WerkzeugFooter";
 import { absoluteUrl } from "../../lib/seo";
 
 export const metadata = {
@@ -9,5 +10,10 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <Recorder />;
+  return (
+    <>
+      <Recorder />
+      <WerkzeugFooter lang="de" />
+    </>
+  );
 }
